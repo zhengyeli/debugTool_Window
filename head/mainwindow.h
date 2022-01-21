@@ -22,6 +22,9 @@
 #include <QMessageBox>                //标准对话框
 
 #include <QSettings>
+#include <QToolButton>
+#include <QFileDialog>
+#include <QInputDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,15 +40,23 @@ public:
     QPushButton * button_scan_sku,*button_ble_send ,*button_blelog_send ,*button_clear ,*button_stop,*button_continue ,*button_discon ;
     QTextEdit *text_sku,*text_ble_send,*text_blelog_send ;
     QListWidget * sku_list;
+    QMenuBar* pMenuBar;
+    QToolBar* toolbar;
 private slots:
-    void on_pushButton_scan_clicked();
-    void on_pushButton_send_clicked();
-    void on_listWidget_bleDev_itemClicked(QListWidgetItem *item);
-    void on_pushButton_discon_clicked();
-    void on_pushButton_sendcmd_clicked();
-    void on_pushButton_pause_clicked();
-    void on_Button_contiunue_clicked();
-    void on_pushButton_clear_clicked();
+    void scanButton_clicked();
+    void sendButton_clicked();
+    void bleDevlist_itemClicked(QListWidgetItem* i);
+    void disconButton_clicked();
+    void sendcmdButton_clicked();
+    void pauseButton_clicked();
+    void continueButton_clicked();
+    void clearButton_clicked();
+
+    void menu_action_resetWindow();
+    void menu_action_restoreWindow();
+    void menu_action_saveWindow();
+    void fileSave();
+    void showMsg(const QString str);
 
 public:
     Ui::MainWindow *ui;

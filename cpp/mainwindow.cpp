@@ -29,7 +29,7 @@
 
 #include <newqdockwidget.h>
 
-MainWindow *MainWindow::mutualUi = nullptr;//！！！！初始化，非常重要
+MainWindow *MainWindow::mutualUi = nullptr;
 
 ConnectionHandler connectionHandler;
 DeviceHandler deviceHandler;
@@ -47,20 +47,53 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    mutualUi = this;//！！！赋值，非常重要
-    readSettings();
+    mutualUi = this;
+
     QWidget* p = takeCentralWidget();   //删除中央窗体，使用QDockWidget代替
     if (p)
         delete p;
+
+    readSettings();
+    // ------------------------------------------在菜单栏添加选项
+
+    pMenuBar = ui->menuBar;
+    QMenu* pMenuFile = new QMenu("文件");
+    // 新建一个Action，然后加入到菜单A中
+    // QAction* pActionA = new QAction("保存调试信息");
+    QAction* pActionFileSave = new QAction(QIcon(QPixmap(":/src/1.png")), "调试信息数据 另存为");
+    pMenuFile->addAction(pActionFileSave);
+    pMenuBar->addMenu(pMenuFile);
+
+    // 如上述，此菜单即添加了图标
+    QMenu* pMenuWindow = new QMenu("窗口");
+    //pMenuWindow->setIcon(QIcon(QPixmap(":/src/2.png")));
+    QAction* pActionWindow = new QAction(QIcon(QPixmap(":/src/2.png")), "恢复窗口默认设置");
+    pActionWindow->setStatusTip(tr("窗口信息"));
+    pMenuWindow->addAction(pActionWindow);
+    QAction* pActionSaveWindow = new QAction(QIcon(QPixmap(":/src/3.png")), "保存窗口设置");
+    pMenuWindow->addAction(pActionSaveWindow);
+    QAction* pActionRestoreWindow = new QAction(QIcon(QPixmap(":/src/4.png")), "恢复窗口设置");
+    pMenuWindow->addAction(pActionRestoreWindow);
+    pMenuBar->addMenu(pMenuWindow);
+
+    QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
+    QObject::connect(pActionWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_resetWindow()));
+    QObject::connect(pActionSaveWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_saveWindow()));
+    QObject::connect(pActionRestoreWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_restoreWindow()));
+
+    //----------------------------------------- 在工具栏添加图标按钮
+    toolbar = new QToolBar("工具栏");
+    QToolButton *toolBtn1 = new QToolButton(this);              //创建QToolButton
+    toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
+    toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
+    toolbar->addWidget(toolBtn1);                               //向工具栏添加QToolButton按钮
+    addToolBar(Qt::TopToolBarArea, toolbar);
+
+    //----------------------------------------- 在界面添加窗口
     dock = new QDockWidget(this);
     setDockNestingEnabled(true);        //允许嵌套dock
-    dock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); // 设置可移动
+    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setWindowTitle("连接蓝牙窗口");
-    //dock->setFeatures(QDockWidget::DockWidgetFloatable); // 设置可浮动
-    //dock->setFeatures(QDockWidget::DockWidgetClosable); // 设置可关闭
-    //dock->setFeatures(QDockWidget::NoDockWidgetFeatures); // 设置可关闭
-    //dock->setFeatures(QDockWidget::AllDockWidgetFeatures); // 以上三种都包含
-    //dock->setGeometry(0,0,250,200);
 
     // 进行布局
     addDockWidget(Qt::LeftDockWidgetArea,dock);
@@ -149,24 +182,23 @@ MainWindow::MainWindow(QWidget *parent)
     updown_verticalLayout->addWidget(sku_list);
 
     //绑定控件的回调函数;
-    connect(button_scan_sku,SIGNAL(clicked(bool)),this,SLOT(on_pushButton_scan_clicked()));
-    connect(sku_list,SIGNAL(itemClicked(QListWidgetItem *)),this,SLOT(on_listWidget_bleDev_itemClicked(QListWidgetItem *)));
-    connect(button_ble_send,SIGNAL(clicked(bool)),this,SLOT(on_pushButton_send_clicked()));
-    connect(button_blelog_send,SIGNAL(clicked(bool)),this,SLOT(on_pushButton_sendcmd_clicked()));
-    connect(button_clear,SIGNAL(clicked(bool)),this,SLOT(on_pushButton_clear_clicked()));
-    connect(button_stop,SIGNAL(clicked(bool)),this,SLOT(on_pushButton_pause_clicked()));
-    connect(button_continue,SIGNAL(clicked(bool)),this,SLOT(on_Button_contiunue_clicked()));
-    connect(button_discon,SIGNAL(clicked(bool)),this,SLOT(on_pushButton_discon_clicked()));
+    connect(button_scan_sku,     SIGNAL(clicked(bool)),                 this,SLOT(scanButton_clicked()));
+    connect(sku_list,            SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(bleDevlist_itemClicked(QListWidgetItem*)));
+    connect(button_ble_send,     SIGNAL(clicked(bool)),                 this,SLOT(sendButton_clicked()));
+    connect(button_blelog_send,  SIGNAL(clicked(bool)),                 this,SLOT(sendcmdButton_clicked()));
+    connect(button_clear,        SIGNAL(clicked(bool)),                 this,SLOT(clearButton_clicked()));
+    connect(button_stop,         SIGNAL(clicked(bool)),                 this,SLOT(pauseButton_clicked()));
+    connect(button_continue,     SIGNAL(clicked(bool)),                 this,SLOT(continueButton_clicked()));
+    connect(button_discon,       SIGNAL(clicked(bool)),                 this,SLOT(disconButton_clicked()));
 
     dock->setWidget(dockWidgetContents);
-
-
     CreatNewView();
+
+    readSettings();
 }
 
 MainWindow::~MainWindow()
 {
-    saveSettings();
     delete ui;
 }
 
@@ -177,7 +209,6 @@ void MainWindow::SetTextEdit(int index, QString str)
     }
 
     MyDockQTE_bleinfo->append(str);
-    //ui->textEdit_log->append(str);
 }
 
 void MainWindow::SetListView(int index, QString str)
@@ -190,7 +221,7 @@ void MainWindow::SetListView(int index, QString str)
     qDebug() << str;
 }
 
-void MainWindow::on_pushButton_scan_clicked()
+void MainWindow::scanButton_clicked()
 {
     deviceFinder.sku = text_sku->toPlainText();
     sku_list->clear(); //清除sku list
@@ -206,7 +237,7 @@ void MainWindow::SetBleLogPrint(QString str)
 }
 
 //选中sku时触发
-void MainWindow::on_listWidget_bleDev_itemClicked(QListWidgetItem *item)
+void MainWindow::bleDevlist_itemClicked(QListWidgetItem* item)
 {
     qDebug() << item->data(0);
     qDebug() << item->data(0).toString();
@@ -215,7 +246,7 @@ void MainWindow::on_listWidget_bleDev_itemClicked(QListWidgetItem *item)
 }
 
 
-void MainWindow::on_pushButton_send_clicked()
+void MainWindow::sendButton_clicked()
 {
     QByteArray array;
     uint8_t parsedValue;
@@ -250,12 +281,12 @@ void MainWindow::on_pushButton_send_clicked()
 }
 
 
-void MainWindow::on_pushButton_discon_clicked()
+void MainWindow::disconButton_clicked()
 {
     deviceHandler.disconnectDevice();
 }
 
-void MainWindow::on_pushButton_sendcmd_clicked()
+void MainWindow::sendcmdButton_clicked()
 {
     QByteArray array;
     QString data = text_blelog_send->toPlainText();
@@ -264,19 +295,19 @@ void MainWindow::on_pushButton_sendcmd_clicked()
     deviceHandler.characteristicWrite(deviceHandler.bledebugsetChar,array);
 }
 
-void MainWindow::on_pushButton_pause_clicked()
+void MainWindow::pauseButton_clicked()
 {
     deviceHandler.disconnectService();
 }
 
 
-void MainWindow::on_Button_contiunue_clicked()
+void MainWindow::continueButton_clicked()
 {
     deviceHandler.continueConnectService();
 }
 
 
-void MainWindow::on_pushButton_clear_clicked()
+void MainWindow::clearButton_clicked()
 {
     if (MyDockQTE_bleinfo)
     MyDockQTE_bleinfo->clear();
@@ -291,20 +322,22 @@ void MainWindow::CreatNewView()
     addDockWidget(Qt::RightDockWidgetArea,dock1);
     //给浮动窗口添加文本编辑区
     MyDockQTE = new QTextEdit(this);
+    MyDockQTE->setReadOnly(true);
     dock1->setWidget(MyDockQTE);
     dock1->setWindowTitle("无线蓝牙打印窗口");
     //dock1->setAttribute(Qt::WA_DeleteOnClose);
     //connect(dock1,SIGNAL(visibilityChanged(bool)),this,SLOT(dock1CloseEvent(bool)));
     //dock2->setFloating(1);
-    dock1->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock1->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
     dock2 = new QDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea,dock2);
     //给浮动窗口添加文本编辑区
     MyDockQTE_bleinfo = new QTextEdit(this);
+    MyDockQTE_bleinfo->setReadOnly(true);
     dock2->setWidget(MyDockQTE_bleinfo);
     dock2->setWindowTitle("蓝牙调试窗口");
-    dock2->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock2->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     //connect(dock2,SIGNAL(visibilityChanged(bool)),this,SLOT(dock2CloseEvent(bool)));
     //dock2->setFloating(1);
 }
@@ -329,6 +362,93 @@ void MainWindow::saveSettings()
     settings.setValue("size", size());
     settings.setValue("state", saveState());
     settings.endGroup();
+    SetTextEdit(1, "保存窗口信息成功");
+    qDebug() << "保存窗口信息成功";
 }
 
+// 恢复默认的界面布局信息
+void MainWindow::menu_action_resetWindow()
+{
+    addToolBar(Qt::TopToolBarArea, toolbar);
+    if (dock != nullptr)
+    {
+        dock->setFloating(0);
+        addDockWidget(Qt::LeftDockWidgetArea,dock);
+        dock->setVisible(true);
+    }
+    if (dock1 == nullptr && dock2 == nullptr && dock == nullptr)
+    {
+        MainWindow();
+    }
+    if (dock1 != nullptr)
+    {
+        dock1->setFloating(0);
+        addDockWidget(Qt::RightDockWidgetArea,dock1);
+        dock1->setVisible(true);
+    }
+    if (dock2 != nullptr)
+    {
+        dock2->setFloating(0);
+        addDockWidget(Qt::RightDockWidgetArea,dock2);
+        dock2->setVisible(true);
+    }
+    SetTextEdit(1, "恢复默认窗口信息成功");
+    qDebug() << "恢复默认窗口信息成功";
+    showMsg("已恢复默认布局~");
+}
 
+// 恢复界面信息
+void MainWindow::menu_action_restoreWindow()
+{
+    readSettings();
+}
+
+void MainWindow::menu_action_saveWindow()
+{
+    saveSettings();
+}
+
+void MainWindow::showMsg(const QString str)
+{
+    QMessageBox msgBox;
+    msgBox.setText(str);
+    msgBox.exec();
+}
+
+void MainWindow::fileSave()
+{
+    QString str = text_blelog_send->toPlainText();
+    QByteArray buf = str.toUtf8();
+    QString fileName = nullptr;
+
+#define savefile
+
+#ifdef savefile
+
+    QWidget *qwidget = new QWidget();
+    QString dir = QFileDialog::getSaveFileName(qwidget,"save file","",nullptr);
+    QFile file(dir);
+
+#else
+    bool ok;
+    // 打开路径
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+                                                     "/",
+                                                  QFileDialog::ShowDirsOnly
+                                                    | QFileDialog::DontResolveSymlinks);
+    QString text = QInputDialog::getText(this, tr("我只是打酱油的~"),tr("请输入文件名字~"), QLineEdit::Password,0, &ok);
+    if (ok && !text.isEmpty())
+    {
+        fileName = text; //获取输入保存的文件名
+    }
+    else
+    {
+        fileName = tr("logMsgSave.txt"); //默认保存的文件名
+    }
+    QFile file(dir+"/"+fileName);
+#endif
+
+    file.open(QFile::WriteOnly);
+    file.write(buf);
+    file.close();
+}

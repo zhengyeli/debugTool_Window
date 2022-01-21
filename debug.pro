@@ -1,6 +1,7 @@
+TARGET = software
 QT       += core gui
 QT       += qml quick bluetooth
-
+QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip TARGET
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
@@ -15,25 +16,27 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+INCLUDEPATH += $$PWD/head
 
+# cpp/ 会项目栏自动添加一个cpp文件夹
 SOURCES += \
-    NewQDockWidget.cpp \
-    bluetoothbaseclass.cpp \
-    connectionhandler.cpp \
-    devicefinder.cpp \
-    devicehandler.cpp \
-    deviceinfo.cpp \
-    main.cpp \
-    mainwindow.cpp
+    cpp/NewQDockWidget.cpp \
+    cpp/bluetoothbaseclass.cpp \
+    cpp/connectionhandler.cpp \
+    cpp/devicefinder.cpp \
+    cpp/devicehandler.cpp \
+    cpp/deviceinfo.cpp \
+    cpp/main.cpp \
+    cpp/mainwindow.cpp
 
 HEADERS += \
-    bluetoothbaseclass.h \
-    connectionhandler.h \
-    devicefinder.h \
-    devicehandler.h \
-    deviceinfo.h \
-    mainwindow.h \
-    newqdockwidget.h
+    head/bluetoothbaseclass.h \
+    head/connectionhandler.h \
+    head/devicefinder.h \
+    head/devicehandler.h \
+    head/deviceinfo.h \
+    head/mainwindow.h \
+    head/newqdockwidget.h
 
 FORMS += \
     mainwindow.ui
@@ -45,3 +48,9 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    src.qrc
+
+#QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip xxx(生成文件名)
+

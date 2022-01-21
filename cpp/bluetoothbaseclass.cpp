@@ -80,5 +80,5 @@ void BluetoothBaseClass::setInfo(const QString &info)
 void BluetoothBaseClass::clearMessages()
 {
     MainWindow::mutualUi->SetTextEdit(1,"clear");
-    MainWindow::mutualUi->SetListView(1,"clear");;
+    MainWindow::mutualUi->SetListView(1,"clear");
 }

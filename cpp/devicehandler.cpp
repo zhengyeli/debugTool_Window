@@ -276,6 +276,7 @@ void DeviceHandler::serviceStateChanged(QLowEnergyService::ServiceState newState
         break;
     default:
         //nothing for now
+        qDebug() << newState;
         break;
     }
 }
