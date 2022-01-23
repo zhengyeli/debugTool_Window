@@ -3,11 +3,18 @@
 
 #include <QMainWindow>
 #include <QApplication>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QListWidget>
-#include <QListWidgetItem>
 
+// BLUETOOTH
+#include <bluedevice.h>
+#include <QBluetoothLocalDevice>
+#include <QBluetoothUuid>
+#include <QBluetoothDeviceDiscoveryAgent>
+#include <QLowEnergyService>
+#include <QLowEnergyController>
+#include <QApplication>
+
+// WIDGET
+#include <QWidget>
 #include <QMenuBar>                   //菜单栏
 #include <QMenu>                      //菜单
 #include <QAction>                    //菜单项
@@ -20,11 +27,20 @@
 #include <QDockWidget>                //浮动窗口
 #include <QDialog>                    //对话框
 #include <QMessageBox>                //标准对话框
+#include <QVBoxLayout>                //垂直布局
+#include <QHBoxLayout>                //水平布局
+#include <QGridLayout>                //栅格布局
+#include <QToolButton>                //工具栏按钮
+#include <QFileDialog>                //文件对话窗口
+#include <QInputDialog>               //
+#include <QListWidget>
+#include <QListWidgetItem>
 
+// CONFIG
 #include <QSettings>
-#include <QToolButton>
-#include <QFileDialog>
-#include <QInputDialog>
+
+// CUSTOM
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,6 +49,7 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+friend class DeviceFinder;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -42,6 +59,7 @@ public:
     QListWidget * sku_list;
     QMenuBar* pMenuBar;
     QToolBar* toolbar;
+
 private slots:
     void scanButton_clicked();
     void sendButton_clicked();

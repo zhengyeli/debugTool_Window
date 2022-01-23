@@ -61,6 +61,7 @@
 #include <QLowEnergyService>
 
 class DeviceInfo;
+class DeviceHandler;
 
 class DeviceHandler : public BluetoothBaseClass
 {
@@ -93,34 +94,30 @@ public slots:
     void keepalive();
 
 public:
-    //QLowEnergyController
+    // QLowEnergyController
     void serviceDiscovered(const QBluetoothUuid &);
     void serviceScanDone();
     void calculate(unsigned char *data);
 
-    //QLowEnergyService
-    void descriptorRead(const QLowEnergyDescriptor &d,
-                            const QByteArray &value);
+    // QLowEnergyService
+    void descriptorRead(const QLowEnergyDescriptor &d,const QByteArray &value);
     void serviceStateChanged(QLowEnergyService::ServiceState s);
-    void bledebugserviceStateChanged(QLowEnergyService::ServiceState s);
+    void updateInfoFromDev(const QLowEnergyCharacteristic &c,const QByteArray &value);
+    void confirmedDescriptorWrite(const QLowEnergyDescriptor &d,const QByteArray &value);
+    void characteristicWrittenFun(const QLowEnergyCharacteristic &c ,const QByteArray &value);
 
-    void updateInfoFromDev(const QLowEnergyCharacteristic &c,
-                              const QByteArray &value);
-    void confirmedDescriptorWrite(const QLowEnergyDescriptor &d,
-                              const QByteArray &value);
-    void characteristicRead(const QLowEnergyCharacteristic &c,
-                            const QByteArray &value);
-    void characteristicWrite(QLowEnergyCharacteristic character ,QByteArray &value);
+    void searchCharacteristic();
+    void characteristicRead(const QLowEnergyCharacteristic &c,const QByteArray &value);
+    void characteristicWrite(const QLowEnergyCharacteristic character ,const QByteArray &value);
 
-    void addMeasurement(int value);
 
-// ble debug
+    // ble debug
     void bledebugupdateInfoFromDev(const QLowEnergyCharacteristic &c,
                               const QByteArray &value);
     void bledebugdescriptorRead(const QLowEnergyDescriptor &d,
                             const QByteArray &value);
 
-
+    void bledebugserviceStateChanged(QLowEnergyService::ServiceState s);
     QLowEnergyController *m_control = nullptr;
     QLowEnergyService *m_service = nullptr;
     QLowEnergyService *m_service_bledebug = nullptr;

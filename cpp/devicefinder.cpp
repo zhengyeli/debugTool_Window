@@ -64,7 +64,7 @@ DeviceFinder::DeviceFinder(DeviceHandler *handler, QObject *parent):
 
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &DeviceFinder::addDevice);
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this,
-            &DeviceFinder::scanError);
+           &DeviceFinder::scanError);
 
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &DeviceFinder::scanFinished);
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled, this, &DeviceFinder::scanFinished);
@@ -84,8 +84,6 @@ void DeviceFinder::startSearch()
     m_deviceHandler->setDevice(nullptr);
     qDeleteAll(m_devices);
     m_devices.clear();
-    emit devicesChanged();
-    emit scanningChanged();
 
     setInfo("Scanning for devices...");
     m_deviceDiscoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);

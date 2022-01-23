@@ -50,7 +50,6 @@
 
 #include "bluetoothbaseclass.h"
 
-
 BluetoothBaseClass::BluetoothBaseClass(QObject *parent) : QObject(parent)
 {
 }

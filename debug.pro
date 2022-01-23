@@ -1,8 +1,30 @@
 TARGET = software
 QT       += core gui
 QT       += qml quick bluetooth
-QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip TARGET
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+# build depend on dev
+win32 {
+
+    contains(QT_ARCH, i386) {
+        message("32-bit")
+        #LIBS += ......
+    }else {
+        message("64-bit")
+        #LIBS += ......
+    }
+}
+
+unix {
+QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip software
+        message("unix")
+}
+
+macx {
+        message("macx")
+
+}
 
 CONFIG += c++11
 

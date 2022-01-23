@@ -1,46 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QBluetoothLocalDevice>
-#include <QBluetoothUuid>
-#include <QBluetoothDeviceDiscoveryAgent>
-#include <QLowEnergyService>
-#include <QLowEnergyController>
-
-#include <bluedevice.h>
-
-#include <QApplication>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QListWidget>
-#include <QListWidgetItem>
-
 #include "devicefinder.h"
 #include "devicehandler.h"
 #include "deviceinfo.h"
 #include "connectionhandler.h"
-
-#include <QWidget>
-#include <QVBoxLayout>                      //垂直布局
-#include <QHBoxLayout>                      //水平布局
-#include <QGridLayout>                      //栅格布局
-
-#include <QCloseEvent>
-
-#include <newqdockwidget.h>
 
 MainWindow *MainWindow::mutualUi = nullptr;
 
 ConnectionHandler connectionHandler;
 DeviceHandler deviceHandler;
 DeviceFinder deviceFinder(&deviceHandler);
-QTextEdit *MyDockQTE = nullptr;
-QPushButton *QClearButton = nullptr;
-QTextEdit *MyDockQTE_bleinfo = nullptr;
 
 QDockWidget *dock = nullptr;
 QDockWidget *dock1 = nullptr;
 QDockWidget *dock2 = nullptr;
+QTextEdit *MyDockQTE = nullptr;
+QTextEdit *MyDockQTE_bleinfo = nullptr;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -242,7 +218,7 @@ void MainWindow::bleDevlist_itemClicked(QListWidgetItem* item)
     qDebug() << item->data(0);
     qDebug() << item->data(0).toString();
     deviceFinder.connectToService(item->data(0).toString());
-    //deviceFinder.connectToService("ihoment_H7160_07F7");
+    deviceFinder.connectToService("ihoment_H7160_07F7");
 }
 
 
