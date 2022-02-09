@@ -74,8 +74,8 @@ DeviceFinder::DeviceFinder(DeviceHandler *handler, QObject *parent):
 
 DeviceFinder::~DeviceFinder()
 {
-  /*  qDeleteAll(m_devices);
-    m_devices.clear();*/
+    qDeleteAll(m_devices);
+    m_devices.clear();
     setInfo( "Scanning exit.");
 }
 

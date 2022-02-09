@@ -15,8 +15,22 @@ DeviceFinder deviceFinder(&deviceHandler);
 QDockWidget *dock = nullptr;
 QDockWidget *dock1 = nullptr;
 QDockWidget *dock2 = nullptr;
+QDockWidget *dockBleUart = nullptr;
 QTextEdit *MyDockQTE = nullptr;
 QTextEdit *MyDockQTE_bleinfo = nullptr;
+
+// ble uart
+QVBoxLayout *verticalLayout = nullptr;
+QWidget *WidgetContents = nullptr;
+QHBoxLayout *horizontalLayout = nullptr;
+QHBoxLayout *horizontalLayout1 = nullptr;
+QGridLayout *gridlayout = nullptr;
+myQPushButton *firstbutton = nullptr;
+
+
+static int line = 1;
+static int row  = 0;
+int maxrow = 5;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -29,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent)
     if (p)
         delete p;
 
-    readSettings();
     // ------------------------------------------在菜单栏添加选项
 
     pMenuBar = ui->menuBar;
@@ -59,11 +72,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     //----------------------------------------- 在工具栏添加图标按钮
     toolbar = new QToolBar("工具栏");
-    QToolButton *toolBtn1 = new QToolButton(this);              //创建QToolButton
+    toolBtn1 = new QToolButton(this);              //创建QToolButton
     toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
     toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
     toolbar->addWidget(toolBtn1);                               //向工具栏添加QToolButton按钮
     addToolBar(Qt::TopToolBarArea, toolbar);
+
+    connect(toolBtn1, SIGNAL(clicked(bool)), this, SLOT(toolBarBleUartButtonClick()));
 
     //----------------------------------------- 在界面添加窗口
     dock = new QDockWidget(this);
@@ -169,7 +184,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     dock->setWidget(dockWidgetContents);
     CreatNewView();
-
+    toolBarBleUartButtonClick(); //load widget
     readSettings();
 }
 
@@ -221,16 +236,10 @@ void MainWindow::bleDevlist_itemClicked(QListWidgetItem* item)
     deviceFinder.connectToService("ihoment_H7160_07F7");
 }
 
-
-void MainWindow::sendButton_clicked()
+QByteArray MainWindow::calGetBleData(QByteArray array)
 {
-    QByteArray array;
     uint8_t parsedValue;
     uint8_t senddata[20] = {0};
-    QString data = text_ble_send->toPlainText();
-    //qDebug() << data.toUtf8(); //"aa11"
-    array = data.toUtf8(); //"aa11"
-
     for (int i = 0; i < array.length(); i++)
     {
         if ((i % 2) == 0) //字节的高四位
@@ -253,6 +262,15 @@ void MainWindow::sendButton_clicked()
     }
     deviceHandler.calculate(senddata);
     array = QByteArray((char*)senddata,20);
+    return array;
+}
+
+void MainWindow::sendButton_clicked()
+{
+    QString data = text_ble_send->toPlainText();
+    //qDebug() << data.toUtf8(); //"aa11"
+    QByteArray array = data.toUtf8(); //"aa11"
+    array = calGetBleData(array);
     deviceHandler.characteristicWrite(deviceHandler.setChar,array);
 }
 
@@ -373,6 +391,61 @@ void MainWindow::menu_action_resetWindow()
     showMsg("已恢复默认布局~");
 }
 
+//
+void MainWindow::toolBarBleUartButtonClick()
+{
+    if (dockBleUart != nullptr){
+       qDebug() << "dockBleUart really have";
+       if (dockBleUart->isVisible())
+       {
+           qDebug() << "dockBleUart is valid";
+           return;
+       }
+       else
+       {
+           qDebug() << "dockBleUart is no valid, creating now";
+       }
+    }
+    qDebug() << "i am in";
+    dockBleUart = new QDockWidget(this);
+    dockBleUart->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dockBleUart->setWindowTitle("蓝牙-串口透传窗口");
+    //dockBleUart->setFloating(true);
+
+    WidgetContents = new QWidget(dockBleUart);
+    gridlayout= new QGridLayout(WidgetContents);
+
+    QPushButton *button_add_bleUart;
+    button_add_bleUart = new QPushButton(WidgetContents);
+    button_add_bleUart->setMaximumHeight(20); //limit size
+    button_add_bleUart->setMaximumWidth(40);
+    button_add_bleUart->setText("add");
+
+    QPushButton *button_load_bleUart;
+    button_load_bleUart = new QPushButton(WidgetContents);
+    button_load_bleUart->setMaximumHeight(20); //limit size
+    button_load_bleUart->setMaximumWidth(40);
+    button_load_bleUart->setText("load");
+
+
+    QPushButton *button_save_bleUart;
+    button_save_bleUart = new QPushButton(WidgetContents);
+    button_save_bleUart->setMaximumHeight(20); //limit size
+    button_save_bleUart->setMaximumWidth(40);
+    button_save_bleUart->setText("save");
+
+    gridlayout->addWidget(button_add_bleUart,0,0);
+    gridlayout->addWidget(button_load_bleUart,0,1);
+    gridlayout->addWidget(button_save_bleUart,0,2);
+
+    connect(button_add_bleUart, SIGNAL(clicked(bool)), this ,SLOT(toolbarButtonAdd_clicked()));
+    connect(button_load_bleUart, SIGNAL(clicked(bool)), this ,SLOT(bleCmdLoadFile()));
+    connect(button_save_bleUart, SIGNAL(clicked(bool)), this ,SLOT(bleCmdSaveFile()));
+
+    addDockWidget(Qt::RightDockWidgetArea,dockBleUart);
+    dockBleUart->setWidget(WidgetContents);
+}
+
 // 恢复界面信息
 void MainWindow::menu_action_restoreWindow()
 {
@@ -393,9 +466,8 @@ void MainWindow::showMsg(const QString str)
 
 void MainWindow::fileSave()
 {
-    QString str = text_blelog_send->toPlainText();
+    QString str = MyDockQTE->toPlainText();
     QByteArray buf = str.toUtf8();
-    QString fileName = nullptr;
 
 #define savefile
 
@@ -407,6 +479,7 @@ void MainWindow::fileSave()
 
 #else
     bool ok;
+    QString fileName = nullptr;
     // 打开路径
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                                      "/",
@@ -427,4 +500,225 @@ void MainWindow::fileSave()
     file.open(QFile::WriteOnly);
     file.write(buf);
     file.close();
+}
+
+//  dynamic add button
+void MainWindow::toolbarButtonAdd_clicked()
+{
+    myQPushButton *temp = nullptr, *ptemp = nullptr;
+    bool ok;
+    QString cmd = "";
+    QString buttonName = "ButtonN";
+
+    QString text = QInputDialog::getText(this, tr("我只是打酱油的~"),tr("input button name"), QLineEdit::Normal,0, &ok);
+    if (ok && !text.isEmpty())
+    {
+        buttonName = text; //获取输入
+    }
+    else
+    {
+        return;
+    }
+
+    text = QInputDialog::getText(this, tr("我只是打酱油的~"),tr("input cmd + data (BB0101)"), QLineEdit::Normal,0, &ok);
+    if (ok && !text.isEmpty())
+    {
+        cmd = text; //获取输入
+    }
+    else
+    {
+        return;
+    }
+
+    if (firstbutton == nullptr){
+        qDebug() << "firstbutton is null";
+        firstbutton = new myQPushButton(WidgetContents);
+        firstbutton->setMaximumHeight(20); //limit size
+        firstbutton->setMaximumWidth(100);
+        firstbutton->setText(buttonName);
+        firstbutton->nextButton = nullptr;
+        firstbutton->prevButton = nullptr;
+        firstbutton->cmd = cmd;
+        temp = firstbutton;
+    }
+    else
+    {
+        qDebug() << "firstbutton is not null";
+        temp = firstbutton;
+        ptemp = nullptr; // last button
+        while (temp->nextButton != nullptr) {
+            //qDebug() << temp->text();
+            //qDebug() << temp->cmd;
+            temp = temp->nextButton;
+        }
+
+        temp->nextButton = new myQPushButton(WidgetContents);
+        if (temp->nextButton == nullptr){
+            qDebug() << "new is FAIL";
+            return;
+        }
+        temp = temp->nextButton;
+        temp->setMaximumHeight(20); //limit size
+        temp->setMaximumWidth(100);
+        temp->setText(buttonName);
+        temp->nextButton = nullptr;
+        temp->prevButton = ptemp;
+        temp->cmd = cmd;
+    }
+
+    if (temp == nullptr){
+        qDebug() << "temp is null";
+        return;
+    }
+
+    connect(temp,SIGNAL(myclick(myQPushButton*)),this,SLOT(bleCmdSendData(myQPushButton*)));
+
+    if (row <= maxrow)
+    {
+        gridlayout->addWidget(temp,line,row);
+        row++;
+    }
+    else
+    {
+        row = 0;
+        line++;
+        gridlayout->addWidget(temp,line,row);
+    }
+
+    temp = firstbutton;
+    while (temp != nullptr) {
+        qDebug() << temp->text();
+        qDebug() << temp->cmd;
+        temp = temp->nextButton;
+    }
+}
+
+void MainWindow::bleCmdSendData(myQPushButton* temp)
+{
+    qDebug() << temp->cmd.toUtf8(); //"aa11"
+    QByteArray array = temp->cmd.toUtf8(); //"aa11"
+    array = calGetBleData(array);
+    if (deviceHandler.setChar.isValid())
+    {
+        deviceHandler.characteristicWrite(deviceHandler.setChar,array);
+    }
+    else
+    {
+        SetTextEdit(1, "deviceHandler.setChar is null");
+    }
+}
+
+
+void MainWindow::bleCmdSaveFile()
+{
+    if (firstbutton == nullptr)
+    {
+        return;
+    }
+    myQPushButton *temp = firstbutton;
+    QByteArray buf;
+    while (temp != nullptr) {
+        buf += temp->text().toUtf8();
+        buf += "+";
+        buf += temp->cmd.toUtf8();
+        buf += "+";
+        temp = temp->nextButton;
+    }
+
+    QWidget *qwidget = new QWidget();
+    QString dir = QFileDialog::getSaveFileName(qwidget,"save file","",nullptr);
+    QFile file(dir);
+
+
+    file.open(QFile::WriteOnly);
+    file.write(buf);
+    file.close();
+}
+
+void MainWindow::bleCmdLoadFile()
+{
+    line = 1;
+    row  = 0;
+    myQPushButton *temp = firstbutton;
+    if (firstbutton != nullptr)
+    {
+        while (temp->nextButton != nullptr){
+            temp = temp->nextButton;
+        }
+
+        temp = temp->prevButton;
+
+        while (temp->nextButton != nullptr && temp->prevButton != nullptr){
+            delete  temp->nextButton;
+            temp = temp->prevButton;
+        }
+        delete temp;
+    }
+
+    dockBleUart->close();
+
+    QWidget *qwidget = new QWidget();
+    QString dir = QFileDialog::getOpenFileName(qwidget,"load file","",nullptr);
+    QFile file(dir);
+
+    QByteArray buf;
+    file.open(QFile::ReadOnly);
+    buf = file.readAll();
+    file.close();
+
+    qDebug() << buf;
+
+    QList<QByteArray> list = buf.split('+');
+    for (int i = 0; i < list.count() - 2; i++)
+    {
+        qDebug() << list.at(i) << i << list.count();
+        if (i == 0){
+            myQPushButton *newbutton = nullptr;
+            newbutton = new myQPushButton(WidgetContents);
+            newbutton->setMaximumHeight(20); //limit size
+            newbutton->setMaximumWidth(100);
+            newbutton->setText(list.at(i));
+            newbutton->cmd = list.at(i + 1);
+            firstbutton = newbutton;
+            firstbutton->nextButton = nullptr;
+            firstbutton->prevButton = nullptr;
+            temp = firstbutton;
+        }
+        else if (i % 2 == 0)
+        {
+            myQPushButton *newbutton = nullptr;
+            newbutton = new myQPushButton(WidgetContents);
+            newbutton->setMaximumHeight(20); //limit size
+            newbutton->setMaximumWidth(100);
+            newbutton->setText(list.at(i));
+            newbutton->cmd = list.at(i + 1);
+            newbutton->prevButton = temp;
+            newbutton->nextButton = nullptr;
+
+            temp->nextButton = newbutton;
+            temp = newbutton;
+        }
+    }
+
+    toolBarBleUartButtonClick(); //reload widget
+
+    temp = firstbutton;
+    while (temp != nullptr)
+    {
+        connect(temp,SIGNAL(myclick(myQPushButton*)),this,SLOT(bleCmdSendData(myQPushButton*)));
+        if (row <= maxrow)
+        {
+            gridlayout->addWidget(temp,line,row);
+            row++;
+        }
+        else
+        {
+            row = 0;
+            line++;
+            gridlayout->addWidget(temp,line,row);
+        }
+        qDebug() << line << row << "end";
+        temp = temp->nextButton;
+    }
+
 }

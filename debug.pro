@@ -42,14 +42,14 @@ INCLUDEPATH += $$PWD/head
 
 # cpp/ 会项目栏自动添加一个cpp文件夹
 SOURCES += \
-    cpp/NewQDockWidget.cpp \
     cpp/bluetoothbaseclass.cpp \
     cpp/connectionhandler.cpp \
     cpp/devicefinder.cpp \
     cpp/devicehandler.cpp \
     cpp/deviceinfo.cpp \
     cpp/main.cpp \
-    cpp/mainwindow.cpp
+    cpp/mainwindow.cpp \
+    cpp/myQPushButton.cpp
 
 HEADERS += \
     head/bluetoothbaseclass.h \
@@ -58,7 +58,7 @@ HEADERS += \
     head/devicehandler.h \
     head/deviceinfo.h \
     head/mainwindow.h \
-    head/newqdockwidget.h
+    head/myQPushButton.h
 
 FORMS += \
     mainwindow.ui

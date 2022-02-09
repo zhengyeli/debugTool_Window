@@ -99,15 +99,22 @@ void DeviceHandler::searchCharacteristic()
 
     //const QLowEnergyCharacteristic hrChar = m_service->characteristic(QBluetoothUuid::CharacteristicType::ServiceChanged); //character : 0x2a05
     m_notificationDesc = getChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration); //Descriptor : 0x2902
-    //打开notification
-    m_service->writeDescriptor(m_notificationDesc, QByteArray::fromHex("0100"));//使能通知
-    m_service->readDescriptor(m_notificationDesc);
-    m_service->readCharacteristic(getChar);
+    if (m_notificationDesc.isValid())
+    {
+        //打开notification
+        m_service->writeDescriptor(m_notificationDesc, QByteArray::fromHex("0100"));//使能通知
+        m_service->readDescriptor(m_notificationDesc);
+        m_service->readCharacteristic(getChar);
 
-    // 心跳定时器
-    timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
-    timer->start(5000);
+        // 心跳定时器
+        timer = new QTimer(this);
+        connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
+        timer->start(5000);
+    }
+    else
+    {
+        setError("m_notificationDesc is null.");
+    }
 }
 
 void DeviceHandler::disconnectDevice()
@@ -214,6 +221,7 @@ void DeviceHandler::serviceScanDone()
 
     if (m_service)
     {
+        searchCharacteristic();
         connect(m_service, &QLowEnergyService::descriptorRead, this, &DeviceHandler::descriptorRead);
         // 服务状态改变
         connect(m_service, &QLowEnergyService::stateChanged, this, &DeviceHandler::serviceStateChanged);
@@ -223,13 +231,12 @@ void DeviceHandler::serviceScanDone()
         connect(m_service, &QLowEnergyService::characteristicRead, this, &DeviceHandler::characteristicRead);
         // 写信息
         connect(m_service, &QLowEnergyService::characteristicWritten, this, &DeviceHandler::characteristicWrittenFun);
-        //connect(m_service, &QLowEnergyService::descriptorWritten, this, &DeviceHandler::confirmedDescriptorWrite);
+
         if (m_service->state() == QLowEnergyService::RemoteService)
         {
             // start scan
             m_service->discoverDetails();
             setInfo("start scan Characteristic");
-            searchCharacteristic();
         }
         else
         {
@@ -265,7 +272,7 @@ void DeviceHandler::serviceStateChanged(QLowEnergyService::ServiceState newState
 {
     switch (newState) {
     case QLowEnergyService::RemoteServiceDiscovering:
-        setInfo("ble : QLowEnergyService::RemoteService");
+        setInfo("ble : QLowEnergyService::RemoteServiceDiscovering");
         break;
     case QLowEnergyService::RemoteServiceDiscovered:
     {
@@ -283,6 +290,7 @@ void DeviceHandler::serviceStateChanged(QLowEnergyService::ServiceState newState
         break;
     default:
         //nothing for now
+        qDebug() << newState;
         break;
     }
 }

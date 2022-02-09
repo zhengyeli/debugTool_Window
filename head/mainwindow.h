@@ -40,7 +40,7 @@
 #include <QSettings>
 
 // CUSTOM
-
+#include "myQPushButton.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -59,6 +59,7 @@ public:
     QListWidget * sku_list;
     QMenuBar* pMenuBar;
     QToolBar* toolbar;
+    QToolButton *toolBtn1;
 
 private slots:
     void scanButton_clicked();
@@ -70,11 +71,20 @@ private slots:
     void continueButton_clicked();
     void clearButton_clicked();
 
+    // tooltar button
+    void toolbarButtonAdd_clicked();
+
     void menu_action_resetWindow();
     void menu_action_restoreWindow();
     void menu_action_saveWindow();
     void fileSave();
     void showMsg(const QString str);
+
+    void toolBarBleUartButtonClick();
+    void bleCmdSendData(myQPushButton* temp);
+
+    void bleCmdLoadFile(); //
+    void bleCmdSaveFile(); //
 
 public:
     Ui::MainWindow *ui;
@@ -85,5 +95,6 @@ public:
     void CreatNewView();
     void readSettings();
     void saveSettings();
+    QByteArray calGetBleData(QByteArray);
 };
 #endif // MAINWINDOW_H
