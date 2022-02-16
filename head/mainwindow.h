@@ -78,13 +78,17 @@ private slots:
     void menu_action_restoreWindow();
     void menu_action_saveWindow();
     void fileSave();
-    void showMsg(const QString str);
 
     void toolBarBleUartButtonClick();
     void bleCmdSendData(myQPushButton* temp);
 
     void bleCmdLoadFile(); //
     void bleCmdSaveFile(); //
+
+    void menu_action_bleConnectWindow();
+    void menu_action_SoftwareInfiWindow();
+    void menu_action_BleDebugWindow();
+    void menu_action_BleUartDebugWindow();
 
 public:
     Ui::MainWindow *ui;
@@ -95,6 +99,7 @@ public:
     void CreatNewView();
     void readSettings();
     void saveSettings();
+    void showMsg(QString str);
     QByteArray calGetBleData(QByteArray);
 };
 #endif // MAINWINDOW_H

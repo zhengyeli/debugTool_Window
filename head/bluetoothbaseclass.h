@@ -71,6 +71,7 @@ public:
     void setInfo(const QString& info);
 
     void clearMessages();
+    void showMessages(QString);
 
 signals:
     void errorChanged();

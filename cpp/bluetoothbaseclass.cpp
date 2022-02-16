@@ -81,3 +81,8 @@ void BluetoothBaseClass::clearMessages()
     MainWindow::mutualUi->SetTextEdit(1,"clear");
     MainWindow::mutualUi->SetListView(1,"clear");
 }
+
+void BluetoothBaseClass::showMessages(QString str)
+{
+    MainWindow::mutualUi->showMsg(str);
+}

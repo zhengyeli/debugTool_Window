@@ -30,7 +30,7 @@ myQPushButton *firstbutton = nullptr;
 
 static int line = 1;
 static int row  = 0;
-int maxrow = 5;
+int maxrow = 4;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -63,19 +63,32 @@ MainWindow::MainWindow(QWidget *parent)
     pMenuWindow->addAction(pActionSaveWindow);
     QAction* pActionRestoreWindow = new QAction(QIcon(QPixmap(":/src/4.png")), "恢复窗口设置");
     pMenuWindow->addAction(pActionRestoreWindow);
+    QAction* pBleConnectWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "ble连接窗口");
+    pMenuWindow->addAction(pBleConnectWindow);
+    QAction* pSoftwareInfiWindow = new QAction(QIcon(QPixmap(":/src/6.png")), "软件信息窗口");
+    pMenuWindow->addAction(pSoftwareInfiWindow);
+    QAction* pBleDebugWindow = new QAction(QIcon(QPixmap(":/src/7.png")), "ble调试窗口");
+    pMenuWindow->addAction(pBleDebugWindow);
+    QAction* pBleUartDebugWindow = new QAction(QIcon(QPixmap(":/src/8.png")), "蓝牙-串口调试窗口");
+    pMenuWindow->addAction(pBleUartDebugWindow);
     pMenuBar->addMenu(pMenuWindow);
 
     QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
     QObject::connect(pActionWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_resetWindow()));
     QObject::connect(pActionSaveWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_saveWindow()));
     QObject::connect(pActionRestoreWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_restoreWindow()));
+    QObject::connect(pBleConnectWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_bleConnectWindow()));
+    QObject::connect(pSoftwareInfiWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_SoftwareInfiWindow()));
+    QObject::connect(pBleDebugWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_BleDebugWindow()));
+    QObject::connect(pBleUartDebugWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_BleUartDebugWindow()));
 
     //----------------------------------------- 在工具栏添加图标按钮
-    toolbar = new QToolBar("工具栏");
+    toolbar = new QToolBar("tool bar");
     toolBtn1 = new QToolButton(this);              //创建QToolButton
     toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
     toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
     toolbar->addWidget(toolBtn1);                               //向工具栏添加QToolButton按钮
+    toolbar->setObjectName("tool bar");
     addToolBar(Qt::TopToolBarArea, toolbar);
 
     connect(toolBtn1, SIGNAL(clicked(bool)), this, SLOT(toolBarBleUartButtonClick()));
@@ -85,9 +98,10 @@ MainWindow::MainWindow(QWidget *parent)
     setDockNestingEnabled(true);        //允许嵌套dock
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dock->setWindowTitle("连接蓝牙窗口");
+    dock->setObjectName("连接蓝牙窗口");
 
     // 进行布局
-    addDockWidget(Qt::LeftDockWidgetArea,dock);
+    addDockWidget(Qt::TopDockWidgetArea,dock);
 
     QWidget *dockWidgetContents;
     dockWidgetContents = new QWidget(dock);
@@ -318,11 +332,13 @@ void MainWindow::CreatNewView()
     MyDockQTE = new QTextEdit(this);
     MyDockQTE->setReadOnly(true);
     dock1->setWidget(MyDockQTE);
+    dock1->setObjectName("无线蓝牙打印窗口");
     dock1->setWindowTitle("无线蓝牙打印窗口");
     //dock1->setAttribute(Qt::WA_DeleteOnClose);
     //connect(dock1,SIGNAL(visibilityChanged(bool)),this,SLOT(dock1CloseEvent(bool)));
     //dock2->setFloating(1);
     dock1->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock1->setVisible(false);
 
     dock2 = new QDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea,dock2);
@@ -330,8 +346,10 @@ void MainWindow::CreatNewView()
     MyDockQTE_bleinfo = new QTextEdit(this);
     MyDockQTE_bleinfo->setReadOnly(true);
     dock2->setWidget(MyDockQTE_bleinfo);
+    dock2->setObjectName("蓝牙调试窗口");
     dock2->setWindowTitle("蓝牙调试窗口");
     dock2->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    dock2->setVisible(false);
     //connect(dock2,SIGNAL(visibilityChanged(bool)),this,SLOT(dock2CloseEvent(bool)));
     //dock2->setFloating(1);
 }
@@ -342,8 +360,10 @@ void MainWindow::readSettings()
     QSettings settings("Software Inc.","Icon Editor");
     settings.beginGroup("mainWindow");
     resize(settings.value("size").toSize());
+    restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     settings.endGroup();
+    qDebug() << "恢复窗口";
 }
 
 // 存储当前界面布局信息
@@ -351,28 +371,36 @@ void MainWindow::saveSettings()
 {
     QSettings settings("Software Inc.","Icon Editor");
     settings.beginGroup("mainWindow");
-    //settings.setValue("geometry", saveGeometry());
-    //settings.setValue("pos", this->pos());
+    settings.setValue("geometry",saveGeometry());
     settings.setValue("size", size());
     settings.setValue("state", saveState());
     settings.endGroup();
-    SetTextEdit(1, "保存窗口信息成功");
-    qDebug() << "保存窗口信息成功";
+    qDebug() << "保存窗口";
+/*
+    //寻找所有的dockwidget
+    QList<QDockWidget*> docks = this->findChildren<QDockWidget*>();
+    for(int i = 0; i < docks.size(); i++)
+    {
+       qDebug() << docks.at(i)->windowTitle();
+    }
+*/
 }
 
 // 恢复默认的界面布局信息
 void MainWindow::menu_action_resetWindow()
 {
+    //qDebug() << this->size();QSize(462, 563)
+    resize(QSize(462, 563));
     addToolBar(Qt::TopToolBarArea, toolbar);
+    if (dock1 == nullptr || dock2 == nullptr || dock == nullptr)
+    {
+        MainWindow();
+    }
     if (dock != nullptr)
     {
         dock->setFloating(0);
         addDockWidget(Qt::LeftDockWidgetArea,dock);
         dock->setVisible(true);
-    }
-    if (dock1 == nullptr && dock2 == nullptr && dock == nullptr)
-    {
-        MainWindow();
     }
     if (dock1 != nullptr)
     {
@@ -386,9 +414,21 @@ void MainWindow::menu_action_resetWindow()
         addDockWidget(Qt::RightDockWidgetArea,dock2);
         dock2->setVisible(true);
     }
+    if (dockBleUart != nullptr)
+    {
+        dockBleUart->setFloating(0);
+        addDockWidget(Qt::BottomDockWidgetArea,dockBleUart);
+        dockBleUart->setVisible(true);
+    }
+    /*多个Dockwidget默认重叠*/
+    tabifyDockWidget(dock,dock1);
+    tabifyDockWidget(dock1,dock2);
+    /*默认指针的Dockwidget显示*/
+    dock->raise();
     SetTextEdit(1, "恢复默认窗口信息成功");
     qDebug() << "恢复默认窗口信息成功";
     showMsg("已恢复默认布局~");
+    saveSettings();
 }
 
 //
@@ -410,6 +450,7 @@ void MainWindow::toolBarBleUartButtonClick()
     dockBleUart = new QDockWidget(this);
     dockBleUart->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     dockBleUart->setWindowTitle("蓝牙-串口透传窗口");
+    dockBleUart->setObjectName("蓝牙-串口透传窗口");
     //dockBleUart->setFloating(true);
 
     WidgetContents = new QWidget(dockBleUart);
@@ -442,7 +483,7 @@ void MainWindow::toolBarBleUartButtonClick()
     connect(button_load_bleUart, SIGNAL(clicked(bool)), this ,SLOT(bleCmdLoadFile()));
     connect(button_save_bleUart, SIGNAL(clicked(bool)), this ,SLOT(bleCmdSaveFile()));
 
-    addDockWidget(Qt::RightDockWidgetArea,dockBleUart);
+    addDockWidget(Qt::BottomDockWidgetArea,dockBleUart);
     dockBleUart->setWidget(WidgetContents);
 }
 
@@ -457,7 +498,43 @@ void MainWindow::menu_action_saveWindow()
     saveSettings();
 }
 
-void MainWindow::showMsg(const QString str)
+void MainWindow::menu_action_bleConnectWindow()
+{
+    if (dock->isVisible()){
+        dock->setVisible(false);
+    }else{
+        dock->setVisible(true);
+    }
+}
+
+void MainWindow::menu_action_SoftwareInfiWindow()
+{
+    if (dock2->isVisible()){
+        dock2->setVisible(false);
+    }else{
+        dock2->setVisible(true);
+    }
+}
+
+void MainWindow::menu_action_BleDebugWindow()
+{
+    if (dock1->isVisible()){
+        dock1->setVisible(false);
+    }else{
+        dock1->setVisible(true);
+    }
+}
+
+void MainWindow::menu_action_BleUartDebugWindow()
+{
+   if (dockBleUart->isVisible()){
+        dockBleUart->setVisible(false);
+   }else{
+        dockBleUart->setVisible(true);
+   }
+}
+
+void MainWindow::showMsg(QString str)
 {
     QMessageBox msgBox;
     msgBox.setText(str);
@@ -639,6 +716,23 @@ void MainWindow::bleCmdLoadFile()
 {
     line = 1;
     row  = 0;
+
+    QWidget *qwidget = new QWidget();
+    QString dir = QFileDialog::getOpenFileName(qwidget,"load file","",nullptr);
+
+    qDebug() << dir;
+    if (dir == nullptr){
+        return;
+    }
+
+    QFile file(dir);
+
+    QByteArray buf;
+    file.open(QFile::ReadOnly);
+    buf = file.readAll();
+    file.close();
+
+    qDebug() << buf;
     myQPushButton *temp = firstbutton;
     if (firstbutton != nullptr)
     {
@@ -656,17 +750,6 @@ void MainWindow::bleCmdLoadFile()
     }
 
     dockBleUart->close();
-
-    QWidget *qwidget = new QWidget();
-    QString dir = QFileDialog::getOpenFileName(qwidget,"load file","",nullptr);
-    QFile file(dir);
-
-    QByteArray buf;
-    file.open(QFile::ReadOnly);
-    buf = file.readAll();
-    file.close();
-
-    qDebug() << buf;
 
     QList<QByteArray> list = buf.split('+');
     for (int i = 0; i < list.count() - 2; i++)
@@ -705,8 +788,9 @@ void MainWindow::bleCmdLoadFile()
     temp = firstbutton;
     while (temp != nullptr)
     {
+        qDebug() << temp->text();
         connect(temp,SIGNAL(myclick(myQPushButton*)),this,SLOT(bleCmdSendData(myQPushButton*)));
-        if (row <= maxrow)
+        if (row < maxrow)
         {
             gridlayout->addWidget(temp,line,row);
             row++;
@@ -716,8 +800,9 @@ void MainWindow::bleCmdLoadFile()
             row = 0;
             line++;
             gridlayout->addWidget(temp,line,row);
+            row = 1;
         }
-        qDebug() << line << row << "end";
+
         temp = temp->nextButton;
     }
 
