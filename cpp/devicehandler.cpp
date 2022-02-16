@@ -106,12 +106,12 @@ void DeviceHandler::searchCharacteristic()
         m_service->readDescriptor(m_notificationDesc);
         m_service->readCharacteristic(getChar);
 
-        showMessages("connect sucess");
-
         // 心跳定时器
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
-        timer->start(5000);
+        timer->start(3000);
+
+        showMessages("connect sucess");
     }
     else
     {
