@@ -17,7 +17,7 @@ win32 {
 }
 
 unix {
-QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip software
+#QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip software
         message("unix")
 }
 

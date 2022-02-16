@@ -38,6 +38,7 @@
 
 // CONFIG
 #include <QSettings>
+#include <QScreen>
 
 // CUSTOM
 #include "myQPushButton.h"

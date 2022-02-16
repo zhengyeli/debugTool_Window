@@ -30,7 +30,7 @@ myQPushButton *firstbutton = nullptr;
 
 static int line = 1;
 static int row  = 0;
-int maxrow = 4;
+int maxrow = 3;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -123,9 +123,9 @@ MainWindow::MainWindow(QWidget *parent)
         text_blelog_send->setMinimumHeight(30);
         text_blelog_send->setMaximumHeight(30);
     button_scan_sku = new QPushButton(dockWidgetContents);
-        button_scan_sku->setText("scan");
+        button_scan_sku->setText("扫描");
     button_ble_send = new QPushButton(dockWidgetContents);
-        button_ble_send->setText("send");
+        button_ble_send->setText("发送");
     button_blelog_send = new QPushButton(dockWidgetContents);
         button_blelog_send->setText("log send");
     button_clear = new QPushButton(dockWidgetContents);
@@ -133,10 +133,10 @@ MainWindow::MainWindow(QWidget *parent)
     button_stop = new QPushButton(dockWidgetContents);
         button_stop->setText("stop");
     button_continue = new QPushButton(dockWidgetContents);
-        button_continue->setText("continue");
+        button_continue->setText("继续");
     sku_list= new QListWidget(dockWidgetContents);
     button_discon = new QPushButton(dockWidgetContents);
-        button_discon->setText("disconnect");
+        button_discon->setText("断开");
 
     //new QPushButton();     在空板上增加按键
     //new QPushButton(this); 在当前板上增加按键
@@ -359,9 +359,9 @@ void MainWindow::readSettings()
 {
     QSettings settings("Software Inc.","Icon Editor");
     settings.beginGroup("mainWindow");
-    resize(settings.value("size").toSize());
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
+    resize(settings.value("size").toSize());
     settings.endGroup();
     qDebug() << "恢复窗口";
 }
@@ -390,7 +390,11 @@ void MainWindow::saveSettings()
 void MainWindow::menu_action_resetWindow()
 {
     //qDebug() << this->size();QSize(462, 563)
-    resize(QSize(462, 563));
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect screenRect =  screen->availableVirtualGeometry();
+    resize(screenRect.width(),screenRect.height());
+
+    //setWindowState(Qt::WindowMaximized);
     addToolBar(Qt::TopToolBarArea, toolbar);
     if (dock1 == nullptr || dock2 == nullptr || dock == nullptr)
     {
