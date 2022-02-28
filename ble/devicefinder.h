@@ -48,38 +48,47 @@
 **
 ****************************************************************************/
 
-#ifndef BLUETOOTHBASECLASS_H
-#define BLUETOOTHBASECLASS_H
+#ifndef DEVICEFINDER_H
+#define DEVICEFINDER_H
 
-#include <QObject>
-#include "mainwindow.h"
+#include "devicehandler.h"
+#include "bluetoothbaseclass.h"
 
-//基础继承
-class BluetoothBaseClass : public QObject
+#include <QTimer>
+#include <QVariant>
+#include <QBluetoothDeviceDiscoveryAgent>
+#include <QBluetoothDeviceInfo>
+
+
+class DeviceInfo;
+class DeviceHandler;
+
+class DeviceFinder: public BluetoothBaseClass
 {
     Q_OBJECT
-    Q_PROPERTY(QString error READ error WRITE setError NOTIFY errorChanged)
-    Q_PROPERTY(QString info READ info WRITE setInfo NOTIFY infoChanged)
 
 public:
-    explicit BluetoothBaseClass(QObject *parent = nullptr);
+    DeviceFinder(DeviceHandler *handler, QObject *parent = nullptr);
+    ~DeviceFinder();
 
-    QString error() const;
-    void setError(const QString& error);
+    bool scanning() const;
+    QVariant devices();
+    void connectToService(const QString &address);
+    /* 声明为公共静态的可以类外调用 */
+    void startSearch();
 
-    QString info() const;
-    void setInfo(const QString& info);
-
-    void clearMessages();
-    void showMessages(QString);
-
-signals:
-    void errorChanged();
-    void infoChanged();
+private slots:
+    void addDevice(const QBluetoothDeviceInfo&);
+    void scanError(QBluetoothDeviceDiscoveryAgent::Error error);
+    void scanFinished();
 
 private:
-    QString m_error;
-    QString m_info;
+    DeviceHandler *m_deviceHandler;
+    QBluetoothDeviceDiscoveryAgent *m_deviceDiscoveryAgent;
+    QList<QObject*> m_devices;
+
+public:
+    QString sku;
 };
 
-#endif // BLUETOOTHBASECLASS_H
+#endif // DEVICEFINDER_H

@@ -306,13 +306,18 @@ void DeviceHandler::updateInfoFromDev(const QLowEnergyCharacteristic &c, const Q
     if (c.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2b10}")))
     {
         setInfo("recive :" + value.toHex());
+        if (value.toHex().at(2) == '0' && (value.toHex().at(3) == '1' || value.toHex().at(3) == '0')){
+        }
+        else{
+            blelinkwindow::receive(value.toHex());
+        }
         return;
     }
 }
 
 void DeviceHandler::descriptorRead(const QLowEnergyDescriptor &d, const QByteArray &value)
 {
-    qDebug() << "descriptorRead have changed: " << value.toHex();;
+    qDebug() << d.name() << value.toHex();;
 }
 
 // 读特征 开启通知后 可以触发回调
@@ -485,12 +490,12 @@ void DeviceHandler::bledebugupdateInfoFromDev(const QLowEnergyCharacteristic &c,
     if (c.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2c20}")))
     {
         qDebug() << value;
-        MainWindow::mutualUi->SetBleLogPrint(value.data());
+        bledebugwindow::debugtext_append(value);
         return;
     }
 }
 
 void DeviceHandler::bledebugdescriptorRead(const QLowEnergyDescriptor &d, const QByteArray &value)
 {
-    qDebug() << "descriptorRead have changed: " << value.toHex();;
+    qDebug() << d.name() <<"descriptorRead have changed: " << value.toHex();;
 }

@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include "bluetoothbaseclass.h"
+#include "mainwindow.h"
 
 BluetoothBaseClass::BluetoothBaseClass(QObject *parent) : QObject(parent)
 {
@@ -66,23 +67,27 @@ QString BluetoothBaseClass::info() const
 
 void BluetoothBaseClass::setError(const QString &error)
 {
-    MainWindow::mutualUi->SetTextEdit(1, error);
+    MainWindow::mutualUi->text_info->append("error :"+ error);
     qDebug() << error;
 }
 
 void BluetoothBaseClass::setInfo(const QString &info)
 {
-    MainWindow::mutualUi->SetTextEdit(1, info);
+    MainWindow::mutualUi->text_info->append(info);
     qDebug() << info;
 }
 
 void BluetoothBaseClass::clearMessages()
 {
-    MainWindow::mutualUi->SetTextEdit(1,"clear");
-    MainWindow::mutualUi->SetListView(1,"clear");
+    MainWindow::mutualUi->text_info->clear();
 }
 
 void BluetoothBaseClass::showMessages(QString str)
 {
     MainWindow::mutualUi->showMsg(str);
+}
+
+void BluetoothBaseClass::addBleDevToList(QString str)
+{
+    blelinkwindow::addBleDevToList(str);
 }

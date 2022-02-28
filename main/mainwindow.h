@@ -11,7 +11,6 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QLowEnergyService>
 #include <QLowEnergyController>
-#include <QApplication>
 
 // WIDGET
 #include <QWidget>
@@ -41,11 +40,22 @@
 #include <QScreen>
 
 // CUSTOM
-#include "myQPushButton.h"
+#include "tcpsocketclient.h"
+#include "Window/bleuartwindow.h"
+#include "Window/blelinkwindow.h"
+#include "Window/bledebugwindow.h"
+
+#include "devicefinder.h"
+#include "devicehandler.h"
+#include "connectionhandler.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+class DeviceInfo;
+class DeviceHandler;
+class DeviceFinder;
 
 class MainWindow : public QMainWindow
 {
@@ -55,52 +65,40 @@ friend class DeviceFinder;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    QPushButton * button_scan_sku,*button_ble_send ,*button_blelog_send ,*button_clear ,*button_stop,*button_continue ,*button_discon ;
-    QTextEdit *text_sku,*text_ble_send,*text_blelog_send ;
-    QListWidget * sku_list;
     QMenuBar* pMenuBar;
     QToolBar* toolbar;
-    QToolButton *toolBtn1;
+
+    QDockWidget *DockWidgetsocket, *DockWidgetBleUart, *DockWidgetblelink, *DockWigetbleDebug, *DockwidgetInfo;
+    ConnectionHandler *connectionHandler;
+    DeviceHandler *deviceHandler;
+    DeviceFinder *deviceFinder;
+    QTextEdit *text_info, *text_debug;
 
 private slots:
-    void scanButton_clicked();
-    void sendButton_clicked();
-    void bleDevlist_itemClicked(QListWidgetItem* i);
-    void disconButton_clicked();
-    void sendcmdButton_clicked();
-    void pauseButton_clicked();
-    void continueButton_clicked();
-    void clearButton_clicked();
-
-    // tooltar button
-    void toolbarButtonAdd_clicked();
+    void fileSave();
 
     void menu_action_resetWindow();
     void menu_action_restoreWindow();
     void menu_action_saveWindow();
-    void fileSave();
-
-    void toolBarBleUartButtonClick();
-    void bleCmdSendData(myQPushButton* temp);
-
-    void bleCmdLoadFile(); //
-    void bleCmdSaveFile(); //
-
     void menu_action_bleConnectWindow();
-    void menu_action_SoftwareInfiWindow();
+    void menu_action_SoftwareInfoWindow();
     void menu_action_BleDebugWindow();
     void menu_action_BleUartDebugWindow();
+    void menu_action_TcpSocketWindow();
 
 public:
     Ui::MainWindow *ui;
     static MainWindow *mutualUi;
-    void SetTextEdit(int text_index, QString str);
-    void SetListView(int list_index, QString str);
+    void SetInfo(QString str);
+    void SetListView(QString str);
     void SetBleLogPrint(QString str);
-    void CreatNewView();
     void readSettings();
     void saveSettings();
     void showMsg(QString str);
     QByteArray calGetBleData(QByteArray);
+    void ble_send(QByteArray array);
+    void ble_debug_send(QByteArray array);
+
+    void creatNewDockWindow(QDockWidget *w, Qt::DockWidgetArea, bool mix);
 };
 #endif // MAINWINDOW_H

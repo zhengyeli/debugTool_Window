@@ -52,8 +52,6 @@
 #include "devicehandler.h"
 #include "deviceinfo.h"
 
-#include "mainwindow.h"
-
 DeviceFinder::DeviceFinder(DeviceHandler *handler, QObject *parent):
     BluetoothBaseClass(parent),
     m_deviceHandler(handler)
@@ -69,7 +67,6 @@ DeviceFinder::DeviceFinder(DeviceHandler *handler, QObject *parent):
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &DeviceFinder::scanFinished);
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled, this, &DeviceFinder::scanFinished);
     //! [devicediscovery-1]
-    setInfo("Scanning in.");
 }
 
 DeviceFinder::~DeviceFinder()
@@ -97,12 +94,12 @@ void DeviceFinder::addDevice(const QBluetoothDeviceInfo &device)
         if (sku.length() == 0)
         {
             m_devices.append(new DeviceInfo(device));
-            MainWindow::mutualUi->SetListView(1, device.name());
+            addBleDevToList(device.name());
         }
         else if (QString(device.name()).contains(sku, Qt::CaseInsensitive)) // 匹配不区分大小写
         {
             m_devices.append(new DeviceInfo(device));
-            MainWindow::mutualUi->SetListView(1, device.name());
+            addBleDevToList(device.name());
         }
         setInfo("found :  " + device.name());
     }
@@ -145,8 +142,8 @@ void DeviceFinder::connectToService(const QString &name)
         //if (device && device->getAddress() == address ) {
         if (device && device->getName() == name ) {
             currentDevice = device;
-            MainWindow::mutualUi->SetTextEdit(1, "connect to:");
-            MainWindow::mutualUi->SetTextEdit(1, name);
+            setInfo("connect to:");
+            setInfo(name);
             break;
         }
     }

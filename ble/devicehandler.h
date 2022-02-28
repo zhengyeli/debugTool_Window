@@ -48,47 +48,91 @@
 **
 ****************************************************************************/
 
-#ifndef DEVICEFINDER_H
-#define DEVICEFINDER_H
-
+#ifndef DEVICEHANDLER_H
+#define DEVICEHANDLER_H
 
 #include "bluetoothbaseclass.h"
 
+#include <QDateTime>
+#include <QList>
 #include <QTimer>
-#include <QVariant>
-#include <QBluetoothDeviceDiscoveryAgent>
-#include <QBluetoothDeviceInfo>
 
+#include <QLowEnergyController>
+#include <QLowEnergyService>
 
+#include "Window/bledebugwindow.h"
 class DeviceInfo;
-class DeviceHandler;
 
-class DeviceFinder: public BluetoothBaseClass
+class DeviceHandler : public BluetoothBaseClass
 {
     Q_OBJECT
+    Q_PROPERTY(AddressType addressType READ addressType WRITE setAddressType)
 
 public:
-    DeviceFinder(DeviceHandler *handler, QObject *parent = nullptr);
-    ~DeviceFinder();
+    enum class AddressType {
+        PublicAddress,
+        RandomAddress
+    };
+    Q_ENUM(AddressType)
 
-    bool scanning() const;
-    QVariant devices();
-    void connectToService(const QString &address);
-    /* 声明为公共静态的可以类外调用 */
-    void startSearch();
+    DeviceHandler(QObject *parent = nullptr);
 
-private slots:
-    void addDevice(const QBluetoothDeviceInfo&);
-    void scanError(QBluetoothDeviceDiscoveryAgent::Error error);
-    void scanFinished();
+    void setDevice(DeviceInfo *device);
+    void setAddressType(AddressType type);
+    void disconnectDevice();
+    AddressType addressType() const;
 
-private:
-    DeviceHandler *m_deviceHandler;
-    QBluetoothDeviceDiscoveryAgent *m_deviceDiscoveryAgent;
-    QList<QObject*> m_devices;
+signals:
+    void measuringChanged();
+    void aliveChanged();
+    void statsChanged();
+    void characteristicsUpdated();
+
+public slots:
+    void disconnectService();
+    void continueConnectService();
+    void keepalive();
 
 public:
-    QString sku;
+    // QLowEnergyController
+    void serviceDiscovered(const QBluetoothUuid &);
+    void serviceScanDone();
+    void calculate(unsigned char *data);
+
+    // QLowEnergyService
+    void descriptorRead(const QLowEnergyDescriptor &d,const QByteArray &value);
+    void serviceStateChanged(QLowEnergyService::ServiceState s);
+    void updateInfoFromDev(const QLowEnergyCharacteristic &c,const QByteArray &value);
+    void confirmedDescriptorWrite(const QLowEnergyDescriptor &d,const QByteArray &value);
+    void characteristicWrittenFun(const QLowEnergyCharacteristic &c ,const QByteArray &value);
+
+    void searchCharacteristic();
+    void characteristicRead(const QLowEnergyCharacteristic &c,const QByteArray &value);
+    void characteristicWrite(const QLowEnergyCharacteristic character ,const QByteArray &value);
+
+
+    // ble debug
+    void bledebugupdateInfoFromDev(const QLowEnergyCharacteristic &c,
+                              const QByteArray &value);
+    void bledebugdescriptorRead(const QLowEnergyDescriptor &d,
+                            const QByteArray &value);
+
+    void bledebugserviceStateChanged(QLowEnergyService::ServiceState s);
+    QLowEnergyController *m_control = nullptr;
+    QLowEnergyService *m_service = nullptr;
+    QLowEnergyService *m_service_bledebug = nullptr;
+    QLowEnergyDescriptor m_bledebugnotificationDesc, m_notificationDesc;
+    DeviceInfo *m_currentDevice = nullptr;
+    QLowEnergyCharacteristic bledebugsetChar,setChar;
+    QLowEnergyCharacteristic bledebuggetChar,getChar;
+
+    // Statistics
+    QDateTime m_start;
+    QDateTime m_stop;
+
+    QList<int> m_measurements;
+    QLowEnergyController::RemoteAddressType m_addressType = QLowEnergyController::PublicAddress;
+
 };
 
-#endif // DEVICEFINDER_H
+#endif // DEVICEHANDLER_H

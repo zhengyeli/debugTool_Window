@@ -1,6 +1,7 @@
 TARGET = software
 QT       += core gui
 QT       += qml quick bluetooth
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -38,27 +39,40 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-INCLUDEPATH += $$PWD/head
+
+INCLUDEPATH += $$PWD/ble
+INCLUDEPATH += $$PWD/main
+INCLUDEPATH += $$PWD/socketclient
 
 # cpp/ 会项目栏自动添加一个cpp文件夹
 SOURCES += \
-    cpp/bluetoothbaseclass.cpp \
-    cpp/connectionhandler.cpp \
-    cpp/devicefinder.cpp \
-    cpp/devicehandler.cpp \
-    cpp/deviceinfo.cpp \
-    cpp/main.cpp \
-    cpp/mainwindow.cpp \
-    cpp/myQPushButton.cpp
+    ble/Window/bledebugwindow.cpp \
+    ble/Window/blelinkwindow.cpp \
+    ble/Window/bleuartwindow.cpp \
+    ble/bluetoothbaseclass.cpp \
+    ble/connectionhandler.cpp \
+    ble/devicehandler.cpp \
+    ble/devicefinder.cpp \
+    ble/deviceinfo.cpp \
+    main/main.cpp \
+    main/mainwindow.cpp \
+    main/myQPushButton.cpp \
+    socketclient/mythread.cpp \
+    socketclient/tcpsocketclient.cpp
 
 HEADERS += \
-    head/bluetoothbaseclass.h \
-    head/connectionhandler.h \
-    head/devicefinder.h \
-    head/devicehandler.h \
-    head/deviceinfo.h \
-    head/mainwindow.h \
-    head/myQPushButton.h
+    ble/Window/bledebugwindow.h \
+    ble/Window/blelinkwindow.h \
+    ble/Window/bleuartwindow.h \
+    ble/bluetoothbaseclass.h \
+    ble/connectionhandler.h \
+    ble/devicehandler.h \
+    ble/devicefinder.h \
+    ble/deviceinfo.h \
+    main/mainwindow.h \
+    main/myQPushButton.h \
+    socketclient/mythread.h \
+    socketclient/tcpsocketclient.h \
 
 FORMS += \
     mainwindow.ui
