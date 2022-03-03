@@ -85,6 +85,10 @@ MainWindow::MainWindow(QWidget *parent)
     toolBtn5->setText("debug");
     toolbar->addWidget(toolBtn5);                               //向工具栏添加QToolButton按钮
 
+    QToolButton *toolBtn6 = new QToolButton(this);              //创建QToolButton
+    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
+    toolBtn6->setText("cfgwifi");
+    toolbar->addWidget(toolBtn6);                               //向工具栏添加QToolButton按钮
 
     addToolBar(Qt::TopToolBarArea, toolbar);
 
@@ -93,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(toolBtn3, &QToolButton::clicked, this, &MainWindow::menu_action_bleConnectWindow);
     connect(toolBtn4, &QToolButton::clicked, this, &MainWindow::menu_action_SoftwareInfoWindow);
     connect(toolBtn5, &QToolButton::clicked, this, &MainWindow::menu_action_BleDebugWindow);
-
+    connect(toolBtn6, &QToolButton::clicked, this, &MainWindow::menu_action_configWifi);
     DockwidgetInfo = new QDockWidget(this);
     text_info = new QTextEdit(this);
     text_info->setReadOnly(true);
@@ -140,7 +144,7 @@ void MainWindow::SetInfo(QString str)
 QByteArray MainWindow::calGetBleData(QByteArray array)
 {
     uint8_t parsedValue;
-    uint8_t senddata[20] = {0};
+    uchar senddata[20] = {0};
     for (int i = 0; i < array.length(); i++)
     {
         if ((i % 2) == 0) //字节的高四位
@@ -175,6 +179,7 @@ void MainWindow::ble_send(QByteArray array)
     }
     else
     {
+        //qDebug() << array;
         SetInfo("warning : deviceHandler.setChar is null");
     }
 }
@@ -188,6 +193,21 @@ void MainWindow::ble_debug_send(QByteArray array)
     }
     else
     {
+        SetInfo("warning : deviceHandler.setChar is null");
+    }
+}
+
+void MainWindow::ble_char_send(uchar *array)
+{
+    deviceHandler->calculate(array);
+    QByteArray Array = QByteArray((char*)array,20);
+    if (deviceHandler->setChar.isValid())
+    {
+        deviceHandler->characteristicWrite(deviceHandler->setChar,Array);
+    }
+    else
+    {
+        qDebug() << Array.toHex();
         SetInfo("warning : deviceHandler.setChar is null");
     }
 }
@@ -316,6 +336,16 @@ void MainWindow::menu_action_TcpSocketWindow()
     }else{
         DockWidgetsocket->setVisible(true);
     }
+}
+
+void MainWindow::menu_action_configWifi()
+{
+    if (DockwidgetWifiConfig->isVisible()){
+        DockwidgetWifiConfig->setVisible(false);
+    }else{
+        DockwidgetWifiConfig->setVisible(true);
+    }
+
 }
 
 void MainWindow::showMsg(QString str)

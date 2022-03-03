@@ -120,7 +120,7 @@ void bleUartWindow::addButton()
         return;
     }
 
-    connect(temp,SIGNAL(myclick(myQPushButton*)),this,SLOT(bleCmdSendData(myQPushButton*)));
+    connect(temp,SIGNAL(myclick(myQPushButton*)),this,SLOT(bleSendData(myQPushButton*)));
 
     if (row <= maxrow)
     {
@@ -216,7 +216,7 @@ void bleUartWindow::loadFile()
     //dockBleUart->close();
 
     QList<QByteArray> list = buf.split('+');
-    for (int i = 0; i < list.count() - 2; i++)
+    for (int i = 0; i < list.count() - 1; i++)
     {
         qDebug() << list.at(i) << i << list.count();
         if (i == 0){

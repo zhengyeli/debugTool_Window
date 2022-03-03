@@ -44,6 +44,7 @@
 #include "Window/bleuartwindow.h"
 #include "Window/blelinkwindow.h"
 #include "Window/bledebugwindow.h"
+#include "Window/bleconfigwifi.h"
 
 #include "devicefinder.h"
 #include "devicehandler.h"
@@ -68,7 +69,7 @@ public:
     QMenuBar* pMenuBar;
     QToolBar* toolbar;
 
-    QDockWidget *DockWidgetsocket, *DockWidgetBleUart, *DockWidgetblelink, *DockWigetbleDebug, *DockwidgetInfo;
+    QDockWidget *DockWidgetsocket, *DockWidgetBleUart, *DockWidgetblelink, *DockWigetbleDebug, *DockwidgetInfo, *DockwidgetWifiConfig;
     ConnectionHandler *connectionHandler;
     DeviceHandler *deviceHandler;
     DeviceFinder *deviceFinder;
@@ -85,6 +86,7 @@ private slots:
     void menu_action_BleDebugWindow();
     void menu_action_BleUartDebugWindow();
     void menu_action_TcpSocketWindow();
+    void menu_action_configWifi();
 
 public:
     Ui::MainWindow *ui;
@@ -96,8 +98,9 @@ public:
     void saveSettings();
     void showMsg(QString str);
     QByteArray calGetBleData(QByteArray);
-    void ble_send(QByteArray array);
-    void ble_debug_send(QByteArray array);
+    void ble_send(QByteArray array); // BB AA
+    void ble_char_send(uchar *array);//
+    void ble_debug_send(QByteArray array); //bb aa
 
     void creatNewDockWindow(QDockWidget *w, Qt::DockWidgetArea, bool mix);
 };

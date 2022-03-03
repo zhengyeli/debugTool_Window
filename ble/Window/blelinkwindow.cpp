@@ -101,7 +101,7 @@ void blelinkwindow::init()
 
     //绑定控件的回调函数;
     connect(button_scan_sku,     SIGNAL(clicked(bool)),                 this,SLOT(scanButton_clicked()));
-    connect(sku_list,            SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(bleDevlist_itemClicked(QListWidgetItem*)));
+    connect(sku_list,            SIGNAL(itemClicked(QListWidgetItem*)), this,SLOT(bleDevlist_itemClicked(QListWidgetItem*)));
     connect(button_ble_send,     SIGNAL(clicked(bool)),                 this,SLOT(sendButton_clicked()));
     connect(button_stop,         SIGNAL(clicked(bool)),                 this,SLOT(pauseButton_clicked()));
     connect(button_continue,     SIGNAL(clicked(bool)),                 this,SLOT(continueButton_clicked()));

@@ -23,6 +23,10 @@ int main(int argc, char *argv[])
     w.DockWigetbleDebug->setVisible(false);
     w.text_debug = bledebugwindow.bledebugText;
 
+    bleconfigwifi bleconfigwifiwindow;
+    w.DockwidgetWifiConfig = bleconfigwifiwindow.dockBleWifi;
+    w.DockwidgetWifiConfig->setFloating(false);
+
 #ifdef Q_OS_ANDROID
     w.showMaximized();
 #else

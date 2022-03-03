@@ -70,26 +70,40 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
     dockSocket->setWidget(dockWidgetContents);
     MainWindow::mutualUi->creatNewDockWindow(dockSocket, Qt::TopDockWidgetArea,  false);
 
-    connect(link, &QPushButton::clicked, this, [this](bool){
-        if (tcp_socket->state() == QAbstractSocket::ConnectedState){
-                tcp_socket->disconnectFromHost();
-                message_box->append("disconnected");
-        }else{
-                tcp_socket->connectToHost(ip->text(), port->text().toUInt());
-                message_box->append("ip:" + ip->text());
-                message_box->append("port:" + port->text());
-                message_box->append("connecting");
-        }
-
-            });
+    connect(link, &QPushButton::clicked, this, &tcpSocketClient::clicked);
     connect(clear, &QPushButton::clicked, this, [this](bool){
                 message_box->setText("");
             });
 
+    //tcp_socket->connectToHost();
     //MyThread *t = new MyThread(); // 创建子线程
     //connect(t,SIGNAL(isDone(bool b[255])), this, SLOT(getresult));
     //t->setObjectName("t");
     //t->start(); // 启动子线程
+
+//    int i=0, j=0;
+//       QList<QNetworkInterface> networkInterface = QNetworkInterface::allInterfaces();
+//       for (QList<QNetworkInterface>::const_iterator it = networkInterface.constBegin(); it != networkInterface.constEnd(); ++it)
+//       {
+//           qDebug() << "[" << i << "] : " << (*it).name();
+//           qDebug() << "  " << (*it).humanReadableName();
+//           qDebug() << "  " << (*it).hardwareAddress();
+
+//           //获取连接地址列表
+//           QList<QNetworkAddressEntry> addressEntriesList = (*it).addressEntries();
+//           for (QList<QNetworkAddressEntry>::const_iterator jIt = addressEntriesList.constBegin(); jIt != addressEntriesList.constEnd(); ++jIt)
+//           {
+//               qDebug() << "\t(" << j << ") :";
+//               //输出 ip
+//               qDebug() << "\t\tIP : " <<(*jIt).ip().toString();
+//               //输出 netmask
+//               qDebug() << "\t\tnetmask(子网掩码) : " << (*jIt).netmask().toString();
+//               qDebug() << "\t\tBroadcast(广播地址) : "<< (*jIt).broadcast().toString();
+//               qDebug() << "";
+//               j ++;
+//           }
+//           i ++;
+//       }
 }
 
 tcpSocketClient::~tcpSocketClient()
@@ -106,14 +120,13 @@ void tcpSocketClient::connected()
 {
     qDebug() << "connected";
     message_box->append("connected");
-    link->setText("disconnected");
+    link->setText("disconnect");
 }
 
 void tcpSocketClient::disconnected()
 {
     qDebug() << "disconnected";
-    message_box->append("disconnected");
-    link->setText("connected");
+    link->setText("connect");
 }
 
 void tcpSocketClient::readyRead()
@@ -160,4 +173,18 @@ void tcpSocketClient::getresult(bool result[255])
         lastip[i] = result[i];
     }
     qDebug() << "lastip";
+}
+
+void tcpSocketClient::clicked()
+{
+    if (tcp_socket->state() == QAbstractSocket::ConnectedState){
+        tcp_socket->disconnectFromHost();
+        message_box->append("disconnected");
+    }else if (tcp_socket->state() == QAbstractSocket::UnconnectedState){
+        tcp_socket->connectToHost(ip->text(), port->text().toUInt());
+        message_box->append("connecting to ip: " + ip->text() + " port: " + port->text());
+        if (!tcp_socket->waitForConnected(2000)){
+            message_box->append("disconnected");
+        }
+    }
 }

@@ -46,6 +46,7 @@ INCLUDEPATH += $$PWD/socketclient
 
 # cpp/ 会项目栏自动添加一个cpp文件夹
 SOURCES += \
+    ble/Window/bleconfigwifi.cpp \
     ble/Window/bledebugwindow.cpp \
     ble/Window/blelinkwindow.cpp \
     ble/Window/bleuartwindow.cpp \
@@ -61,6 +62,7 @@ SOURCES += \
     socketclient/tcpsocketclient.cpp
 
 HEADERS += \
+    ble/Window/bleconfigwifi.h \
     ble/Window/bledebugwindow.h \
     ble/Window/blelinkwindow.h \
     ble/Window/bleuartwindow.h \

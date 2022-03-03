@@ -223,7 +223,6 @@ void DeviceHandler::serviceScanDone()
 
     if (m_service)
     {
-        searchCharacteristic();
         connect(m_service, &QLowEnergyService::descriptorRead, this, &DeviceHandler::descriptorRead);
         // 服务状态改变
         connect(m_service, &QLowEnergyService::stateChanged, this, &DeviceHandler::serviceStateChanged);
@@ -234,24 +233,12 @@ void DeviceHandler::serviceScanDone()
         // 写信息
         connect(m_service, &QLowEnergyService::characteristicWritten, this, &DeviceHandler::characteristicWrittenFun);
 
-        if (m_service->state() == QLowEnergyService::RemoteService)
-        {
-            // start scan
-            m_service->discoverDetails();
-            setInfo("start scan Characteristic");
-        }
-        else
-        {
-            // have scan
-            setInfo("have scan");
-            searchCharacteristic();
-        }
+        m_service->discoverDetails();
     }
     else
     {
         setInfo("m_service is null");
     }
-
 
     if (m_service_bledebug)
     {
@@ -260,6 +247,7 @@ void DeviceHandler::serviceScanDone()
         connect(m_service_bledebug, &QLowEnergyService::stateChanged, this, &DeviceHandler::bledebugserviceStateChanged);
         // 特征改变（设备发送通知？）
         connect(m_service_bledebug, &QLowEnergyService::characteristicChanged, this, &DeviceHandler::bledebugupdateInfoFromDev);
+
         m_service_bledebug->discoverDetails();
     }
     else
@@ -330,7 +318,7 @@ void DeviceHandler::characteristicRead(const QLowEnergyCharacteristic &c, const 
     }
 }
 
-// 读特征 开启通知后 可以触发回调
+// write特征 开启通知后 可以触发回调
 void DeviceHandler::characteristicWrittenFun(const QLowEnergyCharacteristic &c, const QByteArray &value)
 {
     // ignore any other characteristic change -> shouldn't really happen though

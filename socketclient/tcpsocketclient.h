@@ -12,6 +12,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QTextEdit>
+#include <QNetworkInterface>
 
 #include <QVBoxLayout>                //垂直布局
 #include <QHBoxLayout>                //水平布局
@@ -37,6 +38,8 @@ private slots:
 private:
     QTcpSocket *tcp_socket;
     void write(const char *data);
+    void clicked();
+
     QLineEdit *ip;
     QLineEdit *port;
     QPushButton *link;
