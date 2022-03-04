@@ -22,6 +22,7 @@ signals:
 private slots:
     void blelog_send();
     void clear();
+    void closeWindow();
 };
 
 #endif // BLEDEBUGWINDOW_H

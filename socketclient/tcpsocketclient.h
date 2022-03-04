@@ -35,6 +35,8 @@ private slots:
     void error(QAbstractSocket::SocketError socketError);
     void readyRead();
     void getresult(bool result[255]);
+    void closeWindow();
+
 private:
     QTcpSocket *tcp_socket;
     void write(const char *data);

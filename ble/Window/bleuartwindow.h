@@ -27,12 +27,14 @@ private slots:
     void bleSendData(myQPushButton* temp);
     void saveFile();
     void loadFile();
+    void closeWindow();
 
 public:
     QDockWidget *dockBleUart;
 
 private:
     QPushButton *button_add_bleUart, *button_load_bleUart, *button_save_bleUart;
+
 signals:
 
 };

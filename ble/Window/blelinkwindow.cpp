@@ -14,7 +14,7 @@ void blelinkwindow::init()
     //----------------------------------------- 在界面添加窗口
     dockblelink = new QDockWidget(this);
     dockblelink->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dockblelink->setWindowTitle("连接蓝牙窗口");
+    dockblelink->setWindowTitle("连接");
     dockblelink->setObjectName("连接蓝牙窗口");
 
     QWidget *dockWidgetContents;
@@ -59,7 +59,7 @@ void blelinkwindow::init()
     QVBoxLayout *left_verticalLayout;
     left_verticalLayout = new QVBoxLayout();
     left_verticalLayout->setSpacing(20);  //间距
-    left_verticalLayout->setContentsMargins(11, 11, 11, 11);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    left_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     //left_verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
     left_verticalLayout->addWidget(text_sku);
     left_verticalLayout->addWidget(text_ble_send);
@@ -68,7 +68,7 @@ void blelinkwindow::init()
     QVBoxLayout *right_verticalLayout;
     right_verticalLayout = new QVBoxLayout();
     right_verticalLayout->setSpacing(20);  //间距
-    right_verticalLayout->setContentsMargins(11, 11, 11, 11);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    right_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     right_verticalLayout->addWidget(button_scan_sku);
     right_verticalLayout->addWidget(button_ble_send);
 
@@ -76,7 +76,7 @@ void blelinkwindow::init()
     QHBoxLayout *horizontalLayout;
     horizontalLayout = new QHBoxLayout();
     horizontalLayout->setSpacing(10);  //间距
-    horizontalLayout->setContentsMargins(11, 11, 11, 11);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    horizontalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     horizontalLayout->addItem(left_verticalLayout);
     horizontalLayout->addItem(right_verticalLayout);
 
@@ -84,7 +84,7 @@ void blelinkwindow::init()
     QHBoxLayout *horizontalLayout1;
     horizontalLayout1 = new QHBoxLayout();
     horizontalLayout1->setSpacing(10);  //间距
-    horizontalLayout1->setContentsMargins(11, 11, 11, 11);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    horizontalLayout1->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     horizontalLayout1->addWidget(button_discon);
     horizontalLayout1->addWidget(button_stop);
     horizontalLayout1->addWidget(button_continue);
@@ -110,6 +110,23 @@ void blelinkwindow::init()
     dockblelink->setWidget(dockWidgetContents);
     // 进行布局
     MainWindow::mutualUi->creatNewDockWindow(dockblelink, Qt::TopDockWidgetArea, false);
+
+    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn->setText(dockblelink->windowTitle());
+
+    MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &blelinkwindow::closeWindow);
+    MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+}
+
+
+void blelinkwindow::closeWindow()
+{
+    MainWindow::mutualUi->closeAllWindow();
+    if (dockblelink->isVisible()){
+        dockblelink->setVisible(false);
+    }else{
+        dockblelink->setVisible(true);
+    }
 }
 
 void blelinkwindow::scanButton_clicked()

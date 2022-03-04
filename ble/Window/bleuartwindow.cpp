@@ -17,8 +17,8 @@ void bleUartWindow::init()
 {
     dockBleUart = new QDockWidget(this);
     dockBleUart->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dockBleUart->setWindowTitle("蓝牙-串口透传窗口");
-    dockBleUart->setObjectName("蓝牙-串口透传窗口");
+    dockBleUart->setWindowTitle("自定");
+    dockBleUart->setObjectName("自定窗口");
     //dockBleUart->setFloating(true);
 
     WidgetContents = new QWidget(dockBleUart);
@@ -49,6 +49,25 @@ void bleUartWindow::init()
 
     MainWindow::mutualUi->creatNewDockWindow(dockBleUart, Qt::TopDockWidgetArea,  false);
     dockBleUart->setWidget(WidgetContents);
+
+    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
+    toolBtn->setText(dockBleUart->windowTitle());
+    //toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
+
+    MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bleUartWindow::closeWindow);
+    MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+}
+
+
+void bleUartWindow::closeWindow()
+{
+    MainWindow::mutualUi->closeAllWindow();
+    if (dockBleUart->isVisible()){
+        dockBleUart->setVisible(false);
+    }else{
+        dockBleUart->setVisible(true);
+    }
 }
 
 //  dynamic add button

@@ -36,7 +36,7 @@ void bleconfigwifi::init()
     QGridLayout *gridlayout = nullptr;
     dockBleWifi = new QDockWidget(this);
     dockBleWifi->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dockBleWifi->setWindowTitle("config wifi窗口");
+    dockBleWifi->setWindowTitle("wifi");
     dockBleWifi->setObjectName("config wifi窗口");
     //dockBleUart->setFloating(true);
 
@@ -73,6 +73,23 @@ void bleconfigwifi::init()
 
     MainWindow::mutualUi->creatNewDockWindow(dockBleWifi, Qt::TopDockWidgetArea,  false);
     dockBleWifi->setWidget(WidgetContents);
+
+    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn->setText(dockBleWifi->windowTitle());
+
+    MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bleconfigwifi::closeWindow);
+    MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+}
+
+
+void bleconfigwifi::closeWindow()
+{
+    MainWindow::mutualUi->closeAllWindow();
+    if (dockBleWifi->isVisible()){
+        dockBleWifi->setVisible(false);
+    }else{
+        dockBleWifi->setVisible(true);
+    }
 }
 
 void bleconfigwifi::clear()

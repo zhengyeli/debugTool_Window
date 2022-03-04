@@ -22,6 +22,7 @@ private slots:
     void pauseButton_clicked();
     void continueButton_clicked();
     void clearButton_clicked();
+    void closeWindow();
 
 private:
     QPushButton * button_scan_sku,*button_ble_send ,*button_stop,*button_continue ,*button_discon, *button_clear;

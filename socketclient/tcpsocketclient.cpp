@@ -22,7 +22,7 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
 
     dockSocket = new QDockWidget();
     dockSocket->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dockSocket->setWindowTitle("tcpSocket窗口");
+    dockSocket->setWindowTitle("Tcp");
     dockSocket->setObjectName("tcpSocket窗口");
 
     QWidget *dockWidgetContents;
@@ -75,6 +75,12 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
                 message_box->setText("");
             });
 
+    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn->setText(dockSocket->windowTitle());
+
+    MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &tcpSocketClient::closeWindow);
+    MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+
     //tcp_socket->connectToHost();
     //MyThread *t = new MyThread(); // 创建子线程
     //connect(t,SIGNAL(isDone(bool b[255])), this, SLOT(getresult));
@@ -104,6 +110,18 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
 //           }
 //           i ++;
 //       }
+}
+
+
+
+void tcpSocketClient::closeWindow()
+{
+    MainWindow::mutualUi->closeAllWindow();
+    if (dockSocket->isVisible()){
+        dockSocket->setVisible(false);
+    }else{
+        dockSocket->setVisible(true);
+    }
 }
 
 tcpSocketClient::~tcpSocketClient()

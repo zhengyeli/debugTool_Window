@@ -81,12 +81,7 @@ private slots:
     void menu_action_resetWindow();
     void menu_action_restoreWindow();
     void menu_action_saveWindow();
-    void menu_action_bleConnectWindow();
-    void menu_action_SoftwareInfoWindow();
-    void menu_action_BleDebugWindow();
-    void menu_action_BleUartDebugWindow();
-    void menu_action_TcpSocketWindow();
-    void menu_action_configWifi();
+    void menu_action_closeAllWindow();
 
 public:
     Ui::MainWindow *ui;
@@ -103,5 +98,6 @@ public:
     void ble_debug_send(QByteArray array); //bb aa
 
     void creatNewDockWindow(QDockWidget *w, Qt::DockWidgetArea, bool mix);
+    void closeAllWindow();
 };
 #endif // MAINWINDOW_H

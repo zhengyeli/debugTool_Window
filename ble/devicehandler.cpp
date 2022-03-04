@@ -51,7 +51,6 @@
 #include "devicehandler.h"
 #include "deviceinfo.h"
 
-
 QTimer *timer = nullptr;
 
 DeviceHandler::DeviceHandler(QObject *parent) :
@@ -107,6 +106,11 @@ void DeviceHandler::searchCharacteristic()
         m_service->readCharacteristic(getChar);
 
         // 心跳定时器
+        if (timer != nullptr){
+            timer->stop();
+            free(timer);
+            timer = nullptr;
+        }
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
         timer->start(3000);
@@ -298,6 +302,10 @@ void DeviceHandler::updateInfoFromDev(const QLowEnergyCharacteristic &c, const Q
         }
         else{
             blelinkwindow::receive(value.toHex());
+        }
+
+        if (value.toHex().at(0) == 'e' && value.toHex().at(1) == 'e' && value.toHex().at(5) == '0'){
+            showMessages("config wifi sucessful");
         }
         return;
     }

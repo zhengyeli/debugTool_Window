@@ -33,14 +33,31 @@ bledebugwindow::bledebugwindow(QWidget *parent)
     VBoxLayout->addWidget(bledebugText);
 
     dockbledebug->setWidget(dockWidgetContents);
-    dockbledebug->setObjectName("无线蓝牙打印窗口");
-    dockbledebug->setWindowTitle("无线蓝牙打印窗口");
+    dockbledebug->setObjectName("无线调试窗口");
+    dockbledebug->setWindowTitle("无线调试");
     dockbledebug->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     //dockbledebug->setVisible(false);
 
     connect(button_blelog_send,       SIGNAL(clicked(bool)),           this,SLOT(blelog_send()));
     connect(button_clear,       SIGNAL(clicked(bool)),                 this,SLOT(clear()));
     MainWindow::mutualUi->creatNewDockWindow(dockbledebug,Qt::TopDockWidgetArea, false);
+
+    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn->setText(dockbledebug->windowTitle());
+
+    MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bledebugwindow::closeWindow);
+    MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+}
+
+
+void bledebugwindow::closeWindow()
+{
+    MainWindow::mutualUi->closeAllWindow();
+    if (dockbledebug->isVisible()){
+        dockbledebug->setVisible(false);
+    }else{
+        dockbledebug->setVisible(true);
+    }
 }
 
 void bledebugwindow::blelog_send()

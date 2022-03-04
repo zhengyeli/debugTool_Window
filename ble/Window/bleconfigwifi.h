@@ -17,6 +17,9 @@ private:
     QPushButton *button_set_wifi, *button_clear_wifi;
     QTextEdit *text_Ssid,*text_Password;
 
+private slots:
+    void closeWindow();
+
 public slots:
     void clear();
     void setwifi();

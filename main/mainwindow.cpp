@@ -36,78 +36,45 @@ MainWindow::MainWindow(QWidget *parent)
     pMenuWindow->addAction(pActionSaveWindow);
     QAction* pActionRestoreWindow = new QAction(QIcon(QPixmap(":/src/4.png")), "恢复窗口设置");
     pMenuWindow->addAction(pActionRestoreWindow);
-    QAction* pBleConnectWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "ble连接窗口");
-    pMenuWindow->addAction(pBleConnectWindow);
-    QAction* pSoftwareInfiWindow = new QAction(QIcon(QPixmap(":/src/6.png")), "软件信息窗口");
-    pMenuWindow->addAction(pSoftwareInfiWindow);
-    QAction* pBleDebugWindow = new QAction(QIcon(QPixmap(":/src/7.png")), "ble调试窗口");
-    pMenuWindow->addAction(pBleDebugWindow);
-    QAction* pBleUartDebugWindow = new QAction(QIcon(QPixmap(":/src/8.png")), "蓝牙-串口调试窗口");
-    pMenuWindow->addAction(pBleUartDebugWindow);
+    QAction* pcloseWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "关闭所有窗口");
+    pMenuWindow->addAction(pcloseWindow);
     pMenuBar->addMenu(pMenuWindow);
 
     QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
     QObject::connect(pActionWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_resetWindow()));
     QObject::connect(pActionSaveWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_saveWindow()));
     QObject::connect(pActionRestoreWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_restoreWindow()));
-    QObject::connect(pBleConnectWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_bleConnectWindow()));
-    QObject::connect(pSoftwareInfiWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_SoftwareInfoWindow()));
-    QObject::connect(pBleDebugWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_BleDebugWindow()));
-    QObject::connect(pBleUartDebugWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_BleUartDebugWindow()));
+    QObject::connect(pcloseWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_closeAllWindow()));
 
-    //----------------------------------------- 在工具栏添加图标按钮
-    toolbar = new QToolBar("tool bar");
-    toolbar->setObjectName("tool bar");
+    //---------------------------dockwidget window config
 
-    QToolButton *toolBtn1 = new QToolButton(this);              //创建QToolButton
-    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
-    toolBtn1->setText("manual");
-    //toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
-    toolbar->addWidget(toolBtn1);                               //向工具栏添加QToolButton按钮
-
-    QToolButton *toolBtn2 = new QToolButton(this);              //创建QToolButton
-    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
-    toolBtn2->setText("tcpsocket");
-    toolbar->addWidget(toolBtn2);                               //向工具栏添加QToolButton按钮
-
-    QToolButton *toolBtn3 = new QToolButton(this);              //创建QToolButton
-    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
-    toolBtn3->setText("blelink");
-    toolbar->addWidget(toolBtn3);                               //向工具栏添加QToolButton按钮
-
-    QToolButton *toolBtn4 = new QToolButton(this);              //创建QToolButton
-    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
-    toolBtn4->setText("info");
-    toolbar->addWidget(toolBtn4);                               //向工具栏添加QToolButton按钮
-
-    QToolButton *toolBtn5 = new QToolButton(this);              //创建QToolButton
-    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
-    toolBtn5->setText("debug");
-    toolbar->addWidget(toolBtn5);                               //向工具栏添加QToolButton按钮
-
-    QToolButton *toolBtn6 = new QToolButton(this);              //创建QToolButton
-    //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
-    toolBtn6->setText("cfgwifi");
-    toolbar->addWidget(toolBtn6);                               //向工具栏添加QToolButton按钮
-
-    addToolBar(Qt::TopToolBarArea, toolbar);
-
-    connect(toolBtn1, &QToolButton::clicked, this, &MainWindow::menu_action_BleUartDebugWindow);
-    connect(toolBtn2, &QToolButton::clicked, this, &MainWindow::menu_action_TcpSocketWindow);
-    connect(toolBtn3, &QToolButton::clicked, this, &MainWindow::menu_action_bleConnectWindow);
-    connect(toolBtn4, &QToolButton::clicked, this, &MainWindow::menu_action_SoftwareInfoWindow);
-    connect(toolBtn5, &QToolButton::clicked, this, &MainWindow::menu_action_BleDebugWindow);
-    connect(toolBtn6, &QToolButton::clicked, this, &MainWindow::menu_action_configWifi);
     DockwidgetInfo = new QDockWidget(this);
     text_info = new QTextEdit(this);
     text_info->setReadOnly(true);
     DockwidgetInfo->setWidget(text_info);
-    DockwidgetInfo->setObjectName("info");
-    DockwidgetInfo->setWindowTitle("info");
+    DockwidgetInfo->setObjectName("软件输出信息");
+    DockwidgetInfo->setWindowTitle("信息");
     addDockWidget(Qt::BottomDockWidgetArea, DockwidgetInfo);
-    //---------------------------dockwidget window config
 
-    // sencond : ble api init
+    //----------------------------------------- 在工具栏添加图标按钮
+    toolbar = new QToolBar(this);
+    toolbar->setObjectName("tool bar");
+
+    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn->setText(DockwidgetInfo->windowTitle());
+    toolbar->addWidget(toolBtn);
+
+    toolbar->connect(toolBtn, &QToolButton::clicked, this, [this]{
+        closeAllWindow();
+        if (DockwidgetInfo->isVisible()){
+            DockwidgetInfo->setVisible(false);
+        }else{
+            DockwidgetInfo->setVisible(true);
+        }
+    });
+
+
+    //-----------------------------------------  sencond : ble api init
     connectionHandler = new ConnectionHandler();
     deviceHandler = new DeviceHandler();
     deviceFinder = new DeviceFinder(deviceHandler);
@@ -250,9 +217,9 @@ void MainWindow::saveSettings()
 void MainWindow::menu_action_resetWindow()
 {
     //qDebug() << this->size();QSize(462, 563)
-    QScreen *screen = QGuiApplication::primaryScreen();
-    QRect screenRect =  screen->availableVirtualGeometry();
-    resize(screenRect.width(),screenRect.height());
+    //QScreen *screen = QGuiApplication::primaryScreen();
+    //QRect screenRect =  screen->availableVirtualGeometry();
+    //resize(screenRect.width(),screenRect.height());
 
     //setWindowState(Qt::WindowMaximized);
     addToolBar(Qt::TopToolBarArea, toolbar);
@@ -263,6 +230,7 @@ void MainWindow::menu_action_resetWindow()
     for(int i = 0; i < docks.size(); i++)
     {
        qDebug() << docks.at(i)->windowTitle();
+       docks.at(i)->setVisible(true);
        if (docks.at(i)->windowTitle() == "连接蓝牙窗口"){
            first = i;
        }
@@ -293,60 +261,23 @@ void MainWindow::menu_action_saveWindow()
     saveSettings();
 }
 
-void MainWindow::menu_action_bleConnectWindow()
+void MainWindow::menu_action_closeAllWindow()
 {
-    if (DockWidgetblelink->isVisible()){
-        DockWidgetblelink->setVisible(false);
-    }else{
-        DockWidgetblelink->setVisible(true);
+    closeAllWindow();
+}
+
+void MainWindow::closeAllWindow()
+{
+    QList<QDockWidget*> docks = this->findChildren<QDockWidget*>();
+    for(int i = 0; i < docks.size(); i++)
+    {
+       docks.at(i)->setVisible(false);
     }
 }
 
-void MainWindow::menu_action_SoftwareInfoWindow()
-{
-    if (DockwidgetInfo->isVisible()){
-        DockwidgetInfo->setVisible(false);
-    }else{
-        DockwidgetInfo->setVisible(true);
-    }
-}
 
-void MainWindow::menu_action_BleDebugWindow()
-{
-    if (DockWigetbleDebug->isVisible()){
-        DockWigetbleDebug->setVisible(false);
-    }else{
-        DockWigetbleDebug->setVisible(true);
-    }
-}
+//------------------------------------------------------
 
-void MainWindow::menu_action_BleUartDebugWindow()
-{
-   if (DockWidgetBleUart->isVisible()){
-        DockWidgetBleUart->setVisible(false);
-   }else{
-        DockWidgetBleUart->setVisible(true);
-   }
-}
-
-void MainWindow::menu_action_TcpSocketWindow()
-{
-    if (DockWidgetsocket->isVisible()){
-        DockWidgetsocket->setVisible(false);
-    }else{
-        DockWidgetsocket->setVisible(true);
-    }
-}
-
-void MainWindow::menu_action_configWifi()
-{
-    if (DockwidgetWifiConfig->isVisible()){
-        DockwidgetWifiConfig->setVisible(false);
-    }else{
-        DockwidgetWifiConfig->setVisible(true);
-    }
-
-}
 
 void MainWindow::showMsg(QString str)
 {

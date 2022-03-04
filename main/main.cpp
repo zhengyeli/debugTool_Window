@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
     bleconfigwifi bleconfigwifiwindow;
     w.DockwidgetWifiConfig = bleconfigwifiwindow.dockBleWifi;
-    w.DockwidgetWifiConfig->setFloating(false);
+    w.DockwidgetWifiConfig->setVisible(false);
 
 #ifdef Q_OS_ANDROID
     w.showMaximized();
