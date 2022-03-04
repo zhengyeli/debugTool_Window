@@ -14,6 +14,7 @@
 
 // WIDGET
 #include <QWidget>
+#include <QRadioButton>
 #include <QMenuBar>                   //菜单栏
 #include <QMenu>                      //菜单
 #include <QAction>                    //菜单项

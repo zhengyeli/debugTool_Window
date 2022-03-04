@@ -38,6 +38,9 @@ MainWindow::MainWindow(QWidget *parent)
     pMenuWindow->addAction(pActionRestoreWindow);
     QAction* pcloseWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "关闭所有窗口");
     pMenuWindow->addAction(pcloseWindow);
+    QRadioButton* pcloseOtherWindow = new QRadioButton("打开窗口-关闭其他窗口");
+    pcloseOtherWindow->setChecked(true);
+
     pMenuBar->addMenu(pMenuWindow);
 
     QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
