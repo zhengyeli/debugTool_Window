@@ -6,6 +6,8 @@ int maxrow = 3;
 myQPushButton *firstbutton = nullptr;
 QWidget *WidgetContents = nullptr;
 QGridLayout *gridlayout = nullptr;
+
+QString last_dir = nullptr;
 bleUartWindow::bleUartWindow(QWidget *parent)
     : QWidget{parent}
 {
@@ -44,7 +46,7 @@ void bleUartWindow::init()
     gridlayout->addWidget(button_save_bleUart,0,2);
 
     connect(button_add_bleUart , SIGNAL(clicked(bool)), this ,SLOT(addButton()));
-    connect(button_load_bleUart, SIGNAL(clicked(bool)), this ,SLOT(loadFile()));
+    connect(button_load_bleUart, SIGNAL(clicked(bool)), this ,SLOT(loadFile(bool)));
     connect(button_save_bleUart, SIGNAL(clicked(bool)), this ,SLOT(saveFile()));
 
     MainWindow::mutualUi->creatNewDockWindow(dockBleUart, Qt::TopDockWidgetArea,  false);
@@ -57,6 +59,15 @@ void bleUartWindow::init()
 
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bleUartWindow::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+
+    QSettings settings("Software Inc.","Icon Editor");
+    settings.beginGroup("mainWindow");
+    last_dir = settings.value("config_dir").toString();
+    settings.endGroup();
+
+    if (!last_dir.isEmpty()){
+        loadFile(true);
+    }
 }
 
 
@@ -195,13 +206,20 @@ void bleUartWindow::saveFile()
     file.close();
 }
 
-void bleUartWindow::loadFile()
+void bleUartWindow::loadFile(bool b)
 {
     line = 1;
     row  = 0;
-
-    QWidget *qwidget = new QWidget();
-    QString dir = QFileDialog::getOpenFileName(qwidget,"load file","",nullptr);
+    QString dir = nullptr;
+    if (b){
+        if (last_dir == nullptr){
+            return;
+        }
+        dir = last_dir;
+    }else{
+        QWidget *qwidget = new QWidget();
+        dir = QFileDialog::getOpenFileName(qwidget,"load file","",nullptr);
+    }
 
     qDebug() << dir;
     if (dir == nullptr){
@@ -211,7 +229,12 @@ void bleUartWindow::loadFile()
     QFile file(dir);
 
     QByteArray buf;
-    file.open(QFile::ReadOnly);
+    if (file.open(QFile::ReadOnly)){
+        QSettings settings("Software Inc.","Icon Editor");
+        settings.beginGroup("mainWindow");
+        settings.setValue("config_dir",dir);
+        settings.endGroup();
+    }
     buf = file.readAll();
     file.close();
 

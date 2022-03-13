@@ -1,5 +1,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include <QtCore>
+#include <QtGui>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+#include <QtWidgets>
+#endif
+
+#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+#include <QtCore5Compat>
+#endif
+
+#pragma execution_character_set("utf-8")
 
 #include <QMainWindow>
 #include <QApplication>
@@ -41,11 +53,12 @@
 #include <QScreen>
 
 // CUSTOM
-#include "Window/tcpsocketclient.h"
+#include "tcpsocketclient.h"
 #include "Window/bleuartwindow.h"
 #include "Window/blelinkwindow.h"
 #include "Window/bledebugwindow.h"
 #include "Window/bleconfigwifi.h"
+#include "Window/bleadvwindow.h"
 
 #include "devicefinder.h"
 #include "devicehandler.h"

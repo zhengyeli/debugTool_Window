@@ -2,7 +2,7 @@
 #define BLEUARTWINDOW_H
 #include "mainwindow.h"
 #include <QWidget>
-#include "myQPushButton.h"
+#include "src/myQPushButton.h"
 
 #include <QDockWidget>                //浮动窗口
 #include <QLineEdit>
@@ -26,7 +26,7 @@ private slots:
     void addButton();
     void bleSendData(myQPushButton* temp);
     void saveFile();
-    void loadFile();
+    void loadFile(bool b);
     void closeWindow();
 
 public:

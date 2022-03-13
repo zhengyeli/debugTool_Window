@@ -34,7 +34,7 @@ bledebugwindow::bledebugwindow(QWidget *parent)
 
     dockbledebug->setWidget(dockWidgetContents);
     dockbledebug->setObjectName("无线调试窗口");
-    dockbledebug->setWindowTitle("无线调试");
+    dockbledebug->setWindowTitle("调试");
     dockbledebug->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     //dockbledebug->setVisible(false);
 

@@ -66,7 +66,6 @@ MainWindow::MainWindow(QWidget *parent)
     QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(DockwidgetInfo->windowTitle());
     toolbar->addWidget(toolBtn);
-    addToolBar(Qt::LeftToolBarArea, toolbar);
 
     toolbar->connect(toolBtn, &QToolButton::clicked, this, [this]{
         closeAllWindow();

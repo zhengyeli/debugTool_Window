@@ -5,6 +5,59 @@ QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+CONFIG += c++11
+
+DEFINES += QT_DEPRECATED_WARNINGS
+
+INCLUDEPATH += $$PWD/ble
+INCLUDEPATH += $$PWD/main
+
+# cpp/ 会项目栏自动添加一个cpp文件夹
+SOURCES += \
+    Window/src/myQPushButton.cpp \
+    Window/bleconfigwifi.cpp \
+    Window/bledebugwindow.cpp \
+    Window/blelinkwindow.cpp \
+    Window/bleuartwindow.cpp \
+    Window/tcpsocketclient.cpp \
+    ble/bluetoothbaseclass.cpp \
+    ble/connectionhandler.cpp \
+    ble/devicehandler.cpp \
+    ble/devicefinder.cpp \
+    ble/deviceinfo.cpp \
+    main/main.cpp \
+    main/mainwindow.cpp \
+
+HEADERS += \
+    Window/src/myQPushButton.h \
+    Window/bleconfigwifi.h \
+    Window/bledebugwindow.h \
+    Window/blelinkwindow.h \
+    Window/bleuartwindow.h \
+    Window/tcpsocketclient.h \
+    ble/bluetoothbaseclass.h \
+    ble/connectionhandler.h \
+    ble/devicehandler.h \
+    ble/devicefinder.h \
+    ble/deviceinfo.h \
+    main/mainwindow.h \
+
+FORMS += \
+    mainwindow.ui
+
+TRANSLATIONS += \
+    debug_zh_CN.ts
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    ui/src.qrc
+
+
+
 # build depend on dev
 win32 {
 
@@ -26,69 +79,3 @@ macx {
         message("macx")
 
 }
-
-CONFIG += c++11
-
-# The following define makes your compiler emit warnings if you use
-# any Qt feature that has been marked deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
-
-# You can also make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-INCLUDEPATH += $$PWD/ble
-INCLUDEPATH += $$PWD/main
-INCLUDEPATH += $$PWD/socketclient
-
-# cpp/ 会项目栏自动添加一个cpp文件夹
-SOURCES += \
-    ble/Window/bleconfigwifi.cpp \
-    ble/Window/bledebugwindow.cpp \
-    ble/Window/blelinkwindow.cpp \
-    ble/Window/bleuartwindow.cpp \
-    ble/bluetoothbaseclass.cpp \
-    ble/connectionhandler.cpp \
-    ble/devicehandler.cpp \
-    ble/devicefinder.cpp \
-    ble/deviceinfo.cpp \
-    main/main.cpp \
-    main/mainwindow.cpp \
-    main/myQPushButton.cpp \
-    socketclient/mythread.cpp \
-    socketclient/tcpsocketclient.cpp
-
-HEADERS += \
-    ble/Window/bleconfigwifi.h \
-    ble/Window/bledebugwindow.h \
-    ble/Window/blelinkwindow.h \
-    ble/Window/bleuartwindow.h \
-    ble/bluetoothbaseclass.h \
-    ble/connectionhandler.h \
-    ble/devicehandler.h \
-    ble/devicefinder.h \
-    ble/deviceinfo.h \
-    main/mainwindow.h \
-    main/myQPushButton.h \
-    socketclient/mythread.h \
-    socketclient/tcpsocketclient.h \
-
-FORMS += \
-    mainwindow.ui
-
-TRANSLATIONS += \
-    debug_zh_CN.ts
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
-
-RESOURCES += \
-    src.qrc
-
-#QMAKE_POST_LINK = sudo setcap CAP_NET_ADMIN=eip xxx(生成文件名)
-

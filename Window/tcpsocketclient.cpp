@@ -1,7 +1,5 @@
 #include "tcpsocketclient.h"
 
-#include "mythread.h"
-
 tcpSocketClient *tcpSocketClient::Client = nullptr;
 
 tcpSocketClient::tcpSocketClient(QWidget *parent)
