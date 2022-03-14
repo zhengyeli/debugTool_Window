@@ -56,9 +56,9 @@ void bleUartWindow::init()
     //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
     toolBtn->setText(dockBleUart->windowTitle());
     //toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
-
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bleUartWindow::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+    dockBleUart->setVisible(false);
 
     QSettings settings("Software Inc.","Icon Editor");
     settings.beginGroup("mainWindow");

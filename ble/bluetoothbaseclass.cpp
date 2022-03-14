@@ -67,13 +67,13 @@ QString BluetoothBaseClass::info() const
 
 void BluetoothBaseClass::setError(const QString &error)
 {
-    MainWindow::mutualUi->text_info->append("error :"+ error);
+    MainWindow::mutualUi->SetInfo("error :"+ error);
     qDebug() << error;
 }
 
 void BluetoothBaseClass::setInfo(const QString &info)
 {
-    MainWindow::mutualUi->text_info->append(info);
+    MainWindow::mutualUi->SetInfo(info);
     qDebug() << info;
 }
 

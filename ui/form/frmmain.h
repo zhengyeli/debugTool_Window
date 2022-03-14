@@ -2,6 +2,7 @@
 #define FRMMAIN_H
 
 #include <QWidget>
+#include "mainwindow.h"
 
 class QAbstractButton;
 
@@ -28,6 +29,7 @@ private:
 
     QList<int> iconsConfig;
     QList<QAbstractButton *> btnsConfig;
+
 
 private:
     //根据QSS样式获取对应颜色值

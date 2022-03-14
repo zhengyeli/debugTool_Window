@@ -73,10 +73,10 @@ void bleconfigwifi::init()
 
     MainWindow::mutualUi->creatNewDockWindow(dockBleWifi, Qt::TopDockWidgetArea,  false);
     dockBleWifi->setWidget(WidgetContents);
+    dockBleWifi->setVisible(false);
 
     QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(dockBleWifi->windowTitle());
-
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bleconfigwifi::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
 }
@@ -104,8 +104,10 @@ void bleconfigwifi::setwifi()
     if (text_Password->toPlainText().isNull() || text_Password->toPlainText().isNull()){
         qDebug() << "ssid or password is null";
     }
-    qDebug() << "ssid length : " << text_Ssid->toPlainText().length();
-    qDebug() << "Password length : " << text_Password->toPlainText().length();
+
+    if (text_Ssid->toPlainText().length() == 0 || text_Password->toPlainText().length() < 8){
+        MainWindow::mutualUi->SetInfo("err ssid or password");
+    }
     len = text_Ssid->toPlainText().length() + text_Password->toPlainText().length() + url.length() + 8;
 
     wifi_para wifi_buf;
@@ -139,7 +141,7 @@ void bleconfigwifi::setwifi()
 
     configWifi_timer = new QTimer(this);
     connect(configWifi_timer, SIGNAL(timeout()), this, SLOT(timerSendWifi()));
-    configWifi_timer->start(1000);
+    configWifi_timer->start(500);
 
 
 }
@@ -170,15 +172,15 @@ void bleconfigwifi::timerSendWifi()
 
             if (configWifi_timer != nullptr){
                 configWifi_timer->stop();
-                free(configWifi_timer);
-                configWifi_timer = nullptr;
+                delete  configWifi_timer;
+                //configWifi_timer = nullptr;
             }
 
             MainWindow::mutualUi->ble_char_send(send_str);
             if (str != nullptr){
 #ifdef Q_OS_LINUX
                 free((void *)str);
-                str = nullptr;
+                //str = nullptr;
 #endif
             }
             return;

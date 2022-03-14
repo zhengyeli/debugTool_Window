@@ -18,8 +18,7 @@ bledebugwindow::bledebugwindow(QWidget *parent)
 
     text_blelog_send = new QTextEdit(dockWidgetContents);
     text_blelog_send->setText("govee");
-    text_blelog_send->setMinimumHeight(30);
-    text_blelog_send->setMaximumHeight(30);
+    text_blelog_send->setMaximumSize(100, 25);
 
     QHBoxLayout  *HBoxLayout;             //栅格布局
     HBoxLayout = new QHBoxLayout();
@@ -36,7 +35,7 @@ bledebugwindow::bledebugwindow(QWidget *parent)
     dockbledebug->setObjectName("无线调试窗口");
     dockbledebug->setWindowTitle("调试");
     dockbledebug->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    //dockbledebug->setVisible(false);
+    dockbledebug->setVisible(false);
 
     connect(button_blelog_send,       SIGNAL(clicked(bool)),           this,SLOT(blelog_send()));
     connect(button_clear,       SIGNAL(clicked(bool)),                 this,SLOT(clear()));
@@ -44,7 +43,6 @@ bledebugwindow::bledebugwindow(QWidget *parent)
 
     QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(dockbledebug->windowTitle());
-
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bledebugwindow::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
 }

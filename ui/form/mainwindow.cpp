@@ -18,36 +18,37 @@ MainWindow::MainWindow(QWidget *parent)
     //-------------------------------------------window
     // ------------------------------------------在菜单栏添加选项
 
-    pMenuBar = ui->menuBar;
-    QMenu* pMenuFile = new QMenu("文件");
-    // 新建一个Action，然后加入到菜单A中
-    // QAction* pActionA = new QAction("保存调试信息");
-    QAction* pActionFileSave = new QAction(QIcon(QPixmap(":/src/1.png")), "调试信息数据 另存为");
-    pMenuFile->addAction(pActionFileSave);
-    pMenuBar->addMenu(pMenuFile);
+    //pMenuBar = ui->menuBar;
 
-    // 如上述，此菜单即添加了图标
-    QMenu* pMenuWindow = new QMenu("窗口");
-    //pMenuWindow->setIcon(QIcon(QPixmap(":/src/2.png")));
-    QAction* pActionWindow = new QAction(QIcon(QPixmap(":/src/2.png")), "恢复窗口默认设置");
-    pActionWindow->setStatusTip(tr("窗口信息"));
-    pMenuWindow->addAction(pActionWindow);
-    QAction* pActionSaveWindow = new QAction(QIcon(QPixmap(":/src/3.png")), "保存窗口设置");
-    pMenuWindow->addAction(pActionSaveWindow);
-    QAction* pActionRestoreWindow = new QAction(QIcon(QPixmap(":/src/4.png")), "恢复窗口设置");
-    pMenuWindow->addAction(pActionRestoreWindow);
-    QAction* pcloseWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "关闭所有窗口");
-    pMenuWindow->addAction(pcloseWindow);
-    QRadioButton* pcloseOtherWindow = new QRadioButton("打开窗口-关闭其他窗口");
-    pcloseOtherWindow->setChecked(true);
+//    QMenu* pMenuFile = new QMenu("文件");
+//    // 新建一个Action，然后加入到菜单A中
+//    // QAction* pActionA = new QAction("保存调试信息");
+//    QAction* pActionFileSave = new QAction(QIcon(QPixmap(":/src/1.png")), "调试信息数据 另存为");
+//    pMenuFile->addAction(pActionFileSave);
+//    pMenuBar->addMenu(pMenuFile);
 
-    pMenuBar->addMenu(pMenuWindow);
+//    // 如上述，此菜单即添加了图标
+//    QMenu* pMenuWindow = new QMenu("窗口");
+//    //pMenuWindow->setIcon(QIcon(QPixmap(":/src/2.png")));
+//    QAction* pActionWindow = new QAction(QIcon(QPixmap(":/src/2.png")), "恢复窗口默认设置");
+//    pActionWindow->setStatusTip(tr("窗口信息"));
+//    pMenuWindow->addAction(pActionWindow);
+//    QAction* pActionSaveWindow = new QAction(QIcon(QPixmap(":/src/3.png")), "保存窗口设置");
+//    pMenuWindow->addAction(pActionSaveWindow);
+//    QAction* pActionRestoreWindow = new QAction(QIcon(QPixmap(":/src/4.png")), "恢复窗口设置");
+//    pMenuWindow->addAction(pActionRestoreWindow);
+//    QAction* pcloseWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "关闭所有窗口");
+//    pMenuWindow->addAction(pcloseWindow);
+//    QRadioButton* pcloseOtherWindow = new QRadioButton("打开窗口-关闭其他窗口");
+//    pcloseOtherWindow->setChecked(true);
 
-    QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
-    QObject::connect(pActionWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_resetWindow()));
-    QObject::connect(pActionSaveWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_saveWindow()));
-    QObject::connect(pActionRestoreWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_restoreWindow()));
-    QObject::connect(pcloseWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_closeAllWindow()));
+//    pMenuBar->addMenu(pMenuWindow);
+
+//    QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
+//    QObject::connect(pActionWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_resetWindow()));
+//    QObject::connect(pActionSaveWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_saveWindow()));
+//    QObject::connect(pActionRestoreWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_restoreWindow()));
+//    QObject::connect(pcloseWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_closeAllWindow()));
 
     //---------------------------dockwidget window config
 
@@ -57,16 +58,17 @@ MainWindow::MainWindow(QWidget *parent)
     DockwidgetInfo->setWidget(text_info);
     DockwidgetInfo->setObjectName("软件输出信息");
     DockwidgetInfo->setWindowTitle("信息");
+    DockwidgetInfo->setVisible(false);
     addDockWidget(Qt::BottomDockWidgetArea, DockwidgetInfo);
 
     //----------------------------------------- 在工具栏添加图标按钮
     toolbar = new QToolBar(this);
     toolbar->setObjectName("tool bar");
-
+    toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(DockwidgetInfo->windowTitle());
     toolbar->addWidget(toolBtn);
-
+    addToolBar(Qt::LeftToolBarArea, toolbar);
     toolbar->connect(toolBtn, &QToolButton::clicked, this, [this]{
         closeAllWindow();
         if (DockwidgetInfo->isVisible()){
@@ -76,6 +78,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    //----------------------------------------- other window
+    blelink      = new blelinkwindow(this);
+    SocketClient = new tcpSocketClient(this);
+    bleuart      = new bleUartWindow(this);
+    bledebug     = new bledebugwindow(this);
 
     //-----------------------------------------  sencond : ble api init
     connectionHandler = new ConnectionHandler();
@@ -107,8 +114,12 @@ void MainWindow::SetInfo(QString str)
     }
     if (str == "clear"){
         text_info->clear();
+        if (tetoutput != nullptr)
+        tetoutput->clear();
     }
     text_info->append(str);
+    if (tetoutput != nullptr)
+    tetoutput->append(str);
 }
 
 QByteArray MainWindow::calGetBleData(QByteArray array)
@@ -225,7 +236,7 @@ void MainWindow::menu_action_resetWindow()
     //resize(screenRect.width(),screenRect.height());
 
     //setWindowState(Qt::WindowMaximized);
-    addToolBar(Qt::TopToolBarArea, toolbar);
+    addToolBar(Qt::LeftToolBarArea, toolbar);
 
     //寻找所有的dockwidget
     int first = 0;

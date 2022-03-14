@@ -54,16 +54,15 @@
 
 // CUSTOM
 #include "tcpsocketclient.h"
-#include "Window/bleuartwindow.h"
-#include "Window/blelinkwindow.h"
-#include "Window/bledebugwindow.h"
-#include "Window/bleconfigwifi.h"
-#include "Window/bleadvwindow.h"
+#include "bleuartwindow.h"
+#include "blelinkwindow.h"
+#include "bledebugwindow.h"
+#include "bleadvwindow.h"
 
 #include "devicefinder.h"
 #include "devicehandler.h"
 #include "connectionhandler.h"
-
+#include "frmmain.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -71,6 +70,12 @@ QT_END_NAMESPACE
 class DeviceInfo;
 class DeviceHandler;
 class DeviceFinder;
+
+
+class blelinkwindow ;
+class tcpSocketClient ;
+class bleUartWindow ;
+class bledebugwindow ;
 
 class MainWindow : public QMainWindow
 {
@@ -87,7 +92,13 @@ public:
     ConnectionHandler *connectionHandler;
     DeviceHandler *deviceHandler;
     DeviceFinder *deviceFinder;
-    QTextEdit *text_info, *text_debug;
+
+    blelinkwindow *blelink;
+    tcpSocketClient *SocketClient;
+    bleUartWindow *bleuart;
+    bledebugwindow *bledebug;
+
+    QTextEdit *text_info, *text_debug, *tetoutput = nullptr;
 
 private slots:
     void fileSave();

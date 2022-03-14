@@ -37,6 +37,10 @@ private slots:
     void getresult(bool result[255]);
     void closeWindow();
 
+    void clear();
+    void setwifi();
+    void timerSendWifi();
+
 private:
     QTcpSocket *tcp_socket;
     void write(const char *data);
@@ -45,11 +49,13 @@ private:
     QLineEdit *ip;
     QLineEdit *port;
     QPushButton *link;
-    QPushButton *clear;
+    QPushButton *button_clear;
     QTextEdit *message_box;
     int ipNum = 255;
     bool lastip[255] = {false};
 
+    QPushButton *button_set_wifi;
+    QTextEdit *text_Ssid,*text_Password;
 public:
     QDockWidget *dockSocket;
     static tcpSocketClient *Client;

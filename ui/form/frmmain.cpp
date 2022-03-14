@@ -4,14 +4,22 @@
 #include "ui_frmmain.h"
 #include "iconhelper.h"
 #include "quihelper.h"
-
+MainWindow *win1;
 frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 {
     ui->setupUi(this);
+
+    // my code
+    MainWindow *w = new MainWindow(this);
+    win1 = w;
+    w->tetoutput = ui->tetoutput;
+    w->setWindowTitle("这是窗口的标题名字");
+    ui->tabWidget->addTab(w, "Tab");
     this->initForm();
     this->initStyle();
     this->initLeftMain();
     this->initLeftConfig();
+
 }
 
 frmMain::~frmMain()
@@ -218,8 +226,6 @@ void frmMain::leftConfigClick()
         QAbstractButton *btn = btnsConfig.at(i);
         btn->setChecked(btn == b);
     }
-
-    ui->lab2->setText(name);
 }
 
 void frmMain::on_btnMenu_Min_clicked()

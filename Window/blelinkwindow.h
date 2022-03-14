@@ -26,8 +26,8 @@ private slots:
 
 private:
     QPushButton * button_scan_sku,*button_ble_send ,*button_stop,*button_continue ,*button_discon, *button_clear;
-    QLabel *cmd_send;
-    static QLabel *cmd_receive;
+    QLineEdit *cmd_send;
+    static QLineEdit *cmd_receive;
     QTextEdit *text_sku,*text_ble_send, *infowindow;
 
  public:

@@ -502,6 +502,14 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <kerning>true</kerning>
+             </font>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
             <property name="text">
              <string>基本设置</string>
             </property>
@@ -589,20 +597,10 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="lab2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>系统设置</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
+        <widget class="QTextEdit" name="tetoutput"/>
+       </item>
+       <item>
+        <widget class="QTabWidget" name="tabWidget"/>
        </item>
       </layout>
      </widget>

@@ -1,7 +1,7 @@
 #include "blelinkwindow.h"
 
 QListWidget *blelinkwindow::sku_list = nullptr;
-QLabel *blelinkwindow::cmd_receive = nullptr;
+QLineEdit *blelinkwindow::cmd_receive = nullptr;
 
 blelinkwindow::blelinkwindow(QWidget *parent)
     : QWidget{parent}
@@ -24,14 +24,10 @@ void blelinkwindow::init()
     /* 所有控件 */
     text_sku = new QTextEdit(dockWidgetContents);
         text_sku->setText("7160");
-        //text_sku->setMinimumWidth(60); //宽度
-        //text_sku->setMaximumWidth(70);
-        text_sku->setMinimumHeight(30);
-        text_sku->setMaximumHeight(30);
+        text_sku->setMaximumSize(200, 25);
     text_ble_send = new QTextEdit(dockWidgetContents);
         text_ble_send->setText("aa01");
-        text_ble_send->setMinimumHeight(30);
-        text_ble_send->setMaximumHeight(30);
+        text_ble_send->setMaximumSize(200, 25);
     button_scan_sku = new QPushButton(dockWidgetContents);
         button_scan_sku->setText("扫描");
     button_ble_send = new QPushButton(dockWidgetContents);
@@ -43,12 +39,14 @@ void blelinkwindow::init()
     sku_list= new QListWidget(dockWidgetContents);
     button_discon = new QPushButton(dockWidgetContents);
         button_discon->setText("断开");
-    cmd_send = new QLabel(dockWidgetContents);
+    cmd_send = new QLineEdit(dockWidgetContents);
         cmd_send->setMinimumHeight(30);
         cmd_send->setMaximumHeight(30);
-    cmd_receive = new QLabel(dockWidgetContents);
+        cmd_send->setReadOnly(true);
+    cmd_receive = new QLineEdit(dockWidgetContents);
         cmd_receive->setMinimumHeight(30);
         cmd_receive->setMaximumHeight(30);
+        cmd_receive->setReadOnly(true);
     button_clear = new QPushButton(dockWidgetContents);
         button_clear->setText("clear");
     //new QPushButton();     在空板上增加按键
@@ -59,7 +57,7 @@ void blelinkwindow::init()
     QVBoxLayout *left_verticalLayout;
     left_verticalLayout = new QVBoxLayout();
     left_verticalLayout->setSpacing(20);  //间距
-    left_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //left_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     //left_verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
     left_verticalLayout->addWidget(text_sku);
     left_verticalLayout->addWidget(text_ble_send);
@@ -68,7 +66,7 @@ void blelinkwindow::init()
     QVBoxLayout *right_verticalLayout;
     right_verticalLayout = new QVBoxLayout();
     right_verticalLayout->setSpacing(20);  //间距
-    right_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //right_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     right_verticalLayout->addWidget(button_scan_sku);
     right_verticalLayout->addWidget(button_ble_send);
 
@@ -76,7 +74,7 @@ void blelinkwindow::init()
     QHBoxLayout *horizontalLayout;
     horizontalLayout = new QHBoxLayout();
     horizontalLayout->setSpacing(10);  //间距
-    horizontalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //horizontalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     horizontalLayout->addItem(left_verticalLayout);
     horizontalLayout->addItem(right_verticalLayout);
 
@@ -84,7 +82,7 @@ void blelinkwindow::init()
     QHBoxLayout *horizontalLayout1;
     horizontalLayout1 = new QHBoxLayout();
     horizontalLayout1->setSpacing(10);  //间距
-    horizontalLayout1->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //horizontalLayout1->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     horizontalLayout1->addWidget(button_discon);
     horizontalLayout1->addWidget(button_stop);
     horizontalLayout1->addWidget(button_continue);
@@ -113,9 +111,10 @@ void blelinkwindow::init()
 
     QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(dockblelink->windowTitle());
-
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &blelinkwindow::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
+
+    dockblelink->setVisible(true);
 }
 
 
