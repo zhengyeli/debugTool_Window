@@ -12,16 +12,19 @@ bledebugwindow::bledebugwindow(QWidget *parent)
     bledebugText = new QTextEdit(dockWidgetContents);
     bledebugText->setReadOnly(true);
     button_blelog_send = new QPushButton(dockWidgetContents);
-    button_blelog_send->setText("log send");
+    button_blelog_send->setText("send");
+
     button_clear = new QPushButton(dockWidgetContents);
     button_clear->setText("clear");
 
-    text_blelog_send = new QTextEdit(dockWidgetContents);
+    text_blelog_send = new QLineEdit(dockWidgetContents);
     text_blelog_send->setText("govee");
     text_blelog_send->setMaximumSize(100, 25);
 
     QHBoxLayout  *HBoxLayout;             //栅格布局
     HBoxLayout = new QHBoxLayout();
+    HBoxLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    HBoxLayout->setSpacing(20);  //间距
     HBoxLayout->addWidget(text_blelog_send);
     HBoxLayout->addWidget(button_blelog_send);
     HBoxLayout->addWidget(button_clear);
@@ -41,7 +44,7 @@ bledebugwindow::bledebugwindow(QWidget *parent)
     connect(button_clear,       SIGNAL(clicked(bool)),                 this,SLOT(clear()));
     MainWindow::mutualUi->creatNewDockWindow(dockbledebug,Qt::TopDockWidgetArea, false);
 
-    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(dockbledebug->windowTitle());
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &bledebugwindow::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
@@ -56,11 +59,12 @@ void bledebugwindow::closeWindow()
     }else{
         dockbledebug->setVisible(true);
     }
+    toolBtn->setChecked(true);
 }
 
 void bledebugwindow::blelog_send()
 {
-    QString data = text_blelog_send->toPlainText();
+    QString data = text_blelog_send->text();
     QByteArray array = data.toUtf8(); //"aa11"
     MainWindow::mutualUi->ble_send(array);
 }

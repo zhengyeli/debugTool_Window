@@ -5,21 +5,25 @@
 #include "iconhelper.h"
 #include "quihelper.h"
 MainWindow *win1;
+
+QList<QString> tbtnConfigNameArray = {"保存窗口设置","恢复窗口设置", "恢复默认设置", "调试信息另存"};
+
 frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 {
     ui->setupUi(this);
 
     // my code
     MainWindow *w = new MainWindow(this);
-    win1 = w;
     w->tetoutput = ui->tetoutput;
     w->setWindowTitle("这是窗口的标题名字");
-    ui->tabWidget->addTab(w, "Tab");
+    ui->stackedWidget_2->addWidget(w);
+
     this->initForm();
     this->initStyle();
     this->initLeftMain();
     this->initLeftConfig();
-
+    // 蓝牙调试窗口
+    initRightToolBar();
 }
 
 frmMain::~frmMain()
@@ -139,9 +143,9 @@ void frmMain::buttonClick()
         btn->setChecked(btn == b);
     }
 
-    if (name == "主界面") {
+    if (name == "串口调试") {
         ui->stackedWidget->setCurrentIndex(0);
-    } else if (name == "系统设置") {
+    } else if (name == "蓝牙调试") {
         ui->stackedWidget->setCurrentIndex(1);
     } else if (name == "警情查询") {
         ui->stackedWidget->setCurrentIndex(2);
@@ -179,8 +183,8 @@ void frmMain::initLeftMain()
 
 void frmMain::initLeftConfig()
 {
-    iconsConfig << 0xf031 << 0xf036 << 0xf249 << 0xf055 << 0xf05a << 0xf249;
-    btnsConfig << ui->tbtnConfig1 << ui->tbtnConfig2 << ui->tbtnConfig3 << ui->tbtnConfig4 << ui->tbtnConfig5 << ui->tbtnConfig6;
+    iconsConfig << 0xf031 << 0xf036 << 0xf249 << 0xf055 ;//<< 0xf05a << 0xf249;
+    btnsConfig << ui->tbtnConfig1 << ui->tbtnConfig2 << ui->tbtnConfig3 << ui->tbtnConfig4;
 
     int count = btnsConfig.count();
     for (int i = 0; i < count; i++) {
@@ -200,6 +204,40 @@ void frmMain::initLeftConfig()
     styleColor.setColor(normalBgColor, normalTextColor, darkBgColor, darkTextColor);
     IconHelper::setStyle(ui->widgetLeftConfig, btnsConfig, iconsConfig, styleColor);
     ui->tbtnConfig1->click();
+}
+
+void frmMain::initRightToolBar()
+{
+    QList<QToolButton*> list = MainWindow::mutualUi->toolbar->findChildren<QToolButton*>();
+    for (int i = 1; i < list.size(); i++)
+    {
+        QToolButton *btn = (QToolButton *)list.at(i);
+        btn->setCheckable(true);
+        btn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        iconsBleDebugUi << 0xf056 + i;
+        btnsBleDebugUi << list.at(i);
+    }
+
+    MainWindow::mutualUi->toolbar->setProperty("flag", "right"); //styleColor.position = "right";
+
+    IconHelper::StyleColor styleColor;
+    styleColor.position = "right";
+    styleColor.iconSize = 16;
+    styleColor.iconWidth = 20;
+    styleColor.iconHeight = 20;
+    styleColor.borderWidth = 3;
+    styleColor.borderColor = borderColor;
+    styleColor.setColor(normalBgColor, normalTextColor, darkBgColor, darkTextColor);
+    IconHelper::setStyle(MainWindow::mutualUi->toolbar, btnsBleDebugUi, iconsBleDebugUi, styleColor);
+
+    QList<QToolButton*> btn = MainWindow::mutualUi->toolbar->findChildren<QToolButton*>();
+    for(int i = 0; i < btn.size(); i++)
+    {
+       if (QString(btn.at(i)->text()).contains("连接", Qt::CaseInsensitive)){
+           btn.at(i)->click();
+           break;
+       }
+    }
 }
 
 void frmMain::leftMainClick()
@@ -225,6 +263,13 @@ void frmMain::leftConfigClick()
     for (int i = 0; i < count; i++) {
         QAbstractButton *btn = btnsConfig.at(i);
         btn->setChecked(btn == b);
+    }
+
+    // 按键对应功能
+    for (int i = 0; i < 4; i++) {
+        if (b->text() == tbtnConfigNameArray.at(i)){
+            MainWindow::mutualUi->selectFunction(i);
+        }
     }
 }
 

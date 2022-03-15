@@ -37,7 +37,7 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
 
     dockSocket = new QDockWidget();
     dockSocket->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    dockSocket->setWindowTitle("Tcp");
+    dockSocket->setWindowTitle("网络");
     dockSocket->setObjectName("tcpSocket窗口");
 
     QWidget *dockWidgetContents;
@@ -45,7 +45,7 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
 
     ip = new QLineEdit(dockWidgetContents);
     ip->setText("192.168.56.255");
-    ip->setMaximumSize(100, 25);
+    ip->setMaximumSize(150, 25);
 
     port = new QLineEdit(dockWidgetContents);
     port->setText("55555");
@@ -61,13 +61,13 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
 
     message_box = new QTextEdit(dockWidgetContents);
 
-    text_Ssid = new QTextEdit(dockWidgetContents);
+    text_Ssid = new QLineEdit(dockWidgetContents);
     text_Ssid->setText("Govee");
-    text_Ssid->setMaximumSize(100, 25);
+    text_Ssid->setMaximumSize(150, 25);
 
-    text_Password = new QTextEdit(dockWidgetContents);
+    text_Password = new QLineEdit(dockWidgetContents);
     text_Password->setText("starstarlight");
-    text_Password->setMaximumSize(100, 25);
+    text_Password->setMaximumSize(150, 25);
 
     button_set_wifi = new QPushButton(dockWidgetContents);
     button_set_wifi->setMaximumSize(50, 25);
@@ -104,7 +104,7 @@ tcpSocketClient::tcpSocketClient(QWidget *parent)
     connect(button_clear   , &QPushButton::clicked, this, [this](bool){message_box->setText("");});
     connect(button_set_wifi, SIGNAL(clicked(bool)), this, SLOT(setwifi()));
 
-    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(dockSocket->windowTitle());
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &tcpSocketClient::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);
@@ -119,6 +119,7 @@ void tcpSocketClient::closeWindow()
     }else{
         dockSocket->setVisible(true);
     }
+    toolBtn->setChecked(true);
 }
 
 tcpSocketClient::~tcpSocketClient()
@@ -213,18 +214,18 @@ void tcpSocketClient::clear()
 void tcpSocketClient::setwifi()
 {
     QString url = "https://dev-device.govee.com";
-    if (text_Password->toPlainText().isNull() || text_Password->toPlainText().isNull()){
+    if (text_Password->text().isNull() || text_Password->text().isNull()){
         qDebug() << "ssid or password is null";
     }
 
-    if (text_Ssid->toPlainText().length() == 0 || text_Password->toPlainText().length() < 8){
+    if (text_Ssid->text().length() == 0 || text_Password->text().length() < 8){
         MainWindow::mutualUi->SetInfo("err ssid or password");
     }
-    len = text_Ssid->toPlainText().length() + text_Password->toPlainText().length() + url.length() + 8;
+    len = text_Ssid->text().length() + text_Password->text().length() + url.length() + 8;
 
     wifi_para wifi_buf;
-    memcpy(wifi_buf.ssid,qPrintable(text_Ssid->toPlainText()),text_Ssid->toPlainText().length()+1);
-    memcpy(wifi_buf.password,qPrintable(text_Password->toPlainText()),text_Password->toPlainText().length()+1);
+    memcpy(wifi_buf.ssid,qPrintable(text_Ssid->text()),text_Ssid->text().length()+1);
+    memcpy(wifi_buf.password,qPrintable(text_Password->text()),text_Password->text().length()+1);
     memcpy(wifi_buf.url,&url,url.length());
 
     wifi_buf.environment = 1;
@@ -234,28 +235,20 @@ void tcpSocketClient::setwifi()
     wifi_buf.url_len[1] = url.length() & 0x00ff;
 
     str = (char*)malloc(len);
-    sprintf(str, "%c%s%c%s%c%c%c%c%x%s",int(text_Ssid->toPlainText().length()),wifi_buf.ssid,
-                                        int(text_Password->toPlainText().length()),wifi_buf.password,
+    sprintf(str, "%c%s%c%s%c%c%c%c%x%s",int(text_Ssid->text().length()),wifi_buf.ssid,
+                                        int(text_Password->text().length()),wifi_buf.password,
                                         wifi_buf.environment,wifi_buf.time_offset,wifi_buf.iot_environment,
                                         wifi_buf.url_len[0],wifi_buf.url_len[1],qPrintable(url));
-
-    qDebug() << "start";
-    for (int j = 0; j < len; j++ ){
-        printf("%x ",*(str+j));
-    }
-    qDebug() << "end";
 
     send_str[0] = 0xa1;
     send_str[1] = 0x11;
     length = ((len/16 == 0) ? len/16 : len/16 + 1) + 2;
     qDebug() << "len:" << len << "length:" << length;
 
-
+    button_set_wifi->setDisabled(true);
     configWifi_timer = new QTimer(this);
     connect(configWifi_timer, SIGNAL(timeout()), this, SLOT(timerSendWifi()));
     configWifi_timer->start(500);
-
-
 }
 
 void tcpSocketClient::timerSendWifi()
@@ -285,6 +278,7 @@ void tcpSocketClient::timerSendWifi()
             if (configWifi_timer != nullptr){
                 configWifi_timer->stop();
                 delete  configWifi_timer;
+                button_set_wifi->setDisabled(false);
                 //configWifi_timer = nullptr;
             }
 

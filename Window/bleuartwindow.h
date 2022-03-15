@@ -31,6 +31,7 @@ private slots:
 
 public:
     QDockWidget *dockBleUart;
+    QToolButton *toolBtn = nullptr;
 
 private:
     QPushButton *button_add_bleUart, *button_load_bleUart, *button_save_bleUart;

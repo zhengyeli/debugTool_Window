@@ -15,40 +15,17 @@ MainWindow::MainWindow(QWidget *parent)
     if (p)
         delete p;
     setDockNestingEnabled(true);        //允许嵌套dock
-    //-------------------------------------------window
+
     // ------------------------------------------在菜单栏添加选项
 
-    //pMenuBar = ui->menuBar;
-
-//    QMenu* pMenuFile = new QMenu("文件");
-//    // 新建一个Action，然后加入到菜单A中
-//    // QAction* pActionA = new QAction("保存调试信息");
-//    QAction* pActionFileSave = new QAction(QIcon(QPixmap(":/src/1.png")), "调试信息数据 另存为");
-//    pMenuFile->addAction(pActionFileSave);
-//    pMenuBar->addMenu(pMenuFile);
-
+//    pMenuBar = ui->menuBar;
 //    // 如上述，此菜单即添加了图标
 //    QMenu* pMenuWindow = new QMenu("窗口");
-//    //pMenuWindow->setIcon(QIcon(QPixmap(":/src/2.png")));
 //    QAction* pActionWindow = new QAction(QIcon(QPixmap(":/src/2.png")), "恢复窗口默认设置");
-//    pActionWindow->setStatusTip(tr("窗口信息"));
 //    pMenuWindow->addAction(pActionWindow);
-//    QAction* pActionSaveWindow = new QAction(QIcon(QPixmap(":/src/3.png")), "保存窗口设置");
-//    pMenuWindow->addAction(pActionSaveWindow);
-//    QAction* pActionRestoreWindow = new QAction(QIcon(QPixmap(":/src/4.png")), "恢复窗口设置");
-//    pMenuWindow->addAction(pActionRestoreWindow);
-//    QAction* pcloseWindow = new QAction(QIcon(QPixmap(":/src/5.png")), "关闭所有窗口");
-//    pMenuWindow->addAction(pcloseWindow);
-//    QRadioButton* pcloseOtherWindow = new QRadioButton("打开窗口-关闭其他窗口");
-//    pcloseOtherWindow->setChecked(true);
-
 //    pMenuBar->addMenu(pMenuWindow);
-
 //    QObject::connect(pActionFileSave, SIGNAL(triggered(bool)), this, SLOT(fileSave()));
-//    QObject::connect(pActionWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_resetWindow()));
-//    QObject::connect(pActionSaveWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_saveWindow()));
-//    QObject::connect(pActionRestoreWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_restoreWindow()));
-//    QObject::connect(pcloseWindow, SIGNAL(triggered(bool)), this, SLOT(menu_action_closeAllWindow()));
+
 
     //---------------------------dockwidget window config
 
@@ -64,11 +41,17 @@ MainWindow::MainWindow(QWidget *parent)
     //----------------------------------------- 在工具栏添加图标按钮
     toolbar = new QToolBar(this);
     toolbar->setObjectName("tool bar");
-    toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    //toolbar->setFixedWidth(80);
+    //toolbar->setGeometry(0,0,0,0);
+    //toolbar->setContentsMargins(0,0,0,0);
+
+    toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(DockwidgetInfo->windowTitle());
+    //toolBtn->setGeometry(0,0,0,0);
+    //toolBtn->setContentsMargins(0,0,0,0);
     toolbar->addWidget(toolBtn);
-    addToolBar(Qt::LeftToolBarArea, toolbar);
+    addToolBar(Qt::RightToolBarArea, toolbar);
     toolbar->connect(toolBtn, &QToolButton::clicked, this, [this]{
         closeAllWindow();
         if (DockwidgetInfo->isVisible()){
@@ -154,13 +137,10 @@ QByteArray MainWindow::calGetBleData(QByteArray array)
 void MainWindow::ble_send(QByteArray array)
 {
     array = calGetBleData(array);
-    if (deviceHandler->setChar.isValid())
-    {
+    if (deviceHandler->setChar.isValid()){
         deviceHandler->characteristicWrite(deviceHandler->setChar,array);
     }
-    else
-    {
-        //qDebug() << array;
+    else{
         SetInfo("warning : deviceHandler.setChar is null");
     }
 }
@@ -194,6 +174,16 @@ void MainWindow::ble_char_send(uchar *array)
 }
 
 //------------------------------------------------------
+void MainWindow::selectFunction(int i)
+{
+    switch (i){
+    case 0:saveSettings();break;
+    case 1:readSettings();break;
+    case 2:resetWindow();break;
+    case 3:fileSave();break;
+    }
+}
+
 
 //读取上次界面信息
 void MainWindow::readSettings()
@@ -228,56 +218,37 @@ void MainWindow::saveSettings()
 }
 
 // 恢复默认的界面布局信息
-void MainWindow::menu_action_resetWindow()
+void MainWindow::resetWindow()
 {
-    //qDebug() << this->size();QSize(462, 563)
-    //QScreen *screen = QGuiApplication::primaryScreen();
-    //QRect screenRect =  screen->availableVirtualGeometry();
-    //resize(screenRect.width(),screenRect.height());
-
-    //setWindowState(Qt::WindowMaximized);
-    addToolBar(Qt::LeftToolBarArea, toolbar);
+    addToolBar(Qt::RightToolBarArea, toolbar);
 
     //寻找所有的dockwidget
     int first = 0;
     QList<QDockWidget*> docks = this->findChildren<QDockWidget*>();
     for(int i = 0; i < docks.size(); i++)
     {
-       qDebug() << docks.at(i)->windowTitle();
-       docks.at(i)->setVisible(true);
-       if (docks.at(i)->windowTitle() == "连接蓝牙窗口"){
-           first = i;
-       }
-       if (i == 0){
-           continue;
-       }
+       //qDebug() << docks.at(i)->windowTitle();
+       docks.at(i)->setVisible(false);
+       docks.at(i)->setFloating(false);
+       if (docks.at(i)->windowTitle() == "连接")
+           docks.at(i)->setVisible(true);
        /*多个Dockwidget默认重叠*/
-       tabifyDockWidget(docks.at(i-1),docks.at(i));
+       //tabifyDockWidget(docks.at(i-1),docks.at(i));
     }
 
+    QList<QToolButton*> btn = toolbar->findChildren<QToolButton*>();
+    for(int i = 0; i < btn.size(); i++)
+    {
+       if (QString(btn.at(i)->text()).contains("连接", Qt::CaseInsensitive)){
+           btn.at(i)->click();
+       }
+    }
     /*默认指针的Dockwidget显示*/
-    docks.at(first)->raise();
+    //docks.at(first)->raise();
 
     SetInfo("恢复默认窗口信息成功");
-    showMsg("已恢复默认布局~");
+    //showMsg("已恢复默认布局~");
     saveSettings();
-}
-
-
-// 恢复界面信息
-void MainWindow::menu_action_restoreWindow()
-{
-    readSettings();
-}
-
-void MainWindow::menu_action_saveWindow()
-{
-    saveSettings();
-}
-
-void MainWindow::menu_action_closeAllWindow()
-{
-    closeAllWindow();
 }
 
 void MainWindow::closeAllWindow()
@@ -286,6 +257,13 @@ void MainWindow::closeAllWindow()
     for(int i = 0; i < docks.size(); i++)
     {
        docks.at(i)->setVisible(false);
+    }
+
+    QList<QToolButton*> list = toolbar->findChildren<QToolButton*>();
+    for (int i = 0; i < list.size(); i++)
+    {
+        QToolButton *btn = (QToolButton *)list.at(i);
+        btn->setChecked(false);
     }
 }
 
@@ -302,7 +280,7 @@ void MainWindow::showMsg(QString str)
 
 void MainWindow::fileSave()
 {
-    QString str = text_debug->toPlainText();
+    QString str = text_info->toPlainText();
     QByteArray buf = str.toUtf8();
 
 #define savefile

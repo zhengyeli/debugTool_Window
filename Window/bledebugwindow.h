@@ -14,9 +14,9 @@ public:
 public:
     QDockWidget *dockbledebug;
     static QTextEdit *bledebugText;
-    QTextEdit *text_blelog_send;
+    QLineEdit *text_blelog_send;
     QPushButton *button_blelog_send, *button_clear;
-
+    QToolButton *toolBtn = nullptr;
 signals:
 
 private slots:

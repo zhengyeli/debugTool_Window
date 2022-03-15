@@ -106,7 +106,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>主界面</string>
+            <string>串口调试</string>
            </property>
            <property name="icon">
             <iconset resource="../other/main.qrc">
@@ -126,7 +126,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>系统设置</string>
+            <string>蓝牙调试</string>
            </property>
            <property name="icon">
             <iconset resource="../other/main.qrc">
@@ -474,7 +474,7 @@
         <widget class="QWidget" name="widgetLeftConfig" native="true">
          <property name="maximumSize">
           <size>
-           <width>110</width>
+           <width>130</width>
            <height>16777215</height>
           </size>
          </property>
@@ -511,7 +511,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>基本设置</string>
+             <string>保存窗口设置</string>
             </property>
            </widget>
           </item>
@@ -524,7 +524,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>转发设置</string>
+             <string>恢复窗口设置</string>
             </property>
            </widget>
           </item>
@@ -537,7 +537,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>用户设置</string>
+             <string>恢复默认设置</string>
             </property>
            </widget>
           </item>
@@ -550,33 +550,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>防区设置</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="tbtnConfig5">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>设备设置</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="tbtnConfig6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>其他设置</string>
+             <string>调试信息另存</string>
             </property>
            </widget>
           </item>
@@ -600,7 +574,7 @@
         <widget class="QTextEdit" name="tetoutput"/>
        </item>
        <item>
-        <widget class="QTabWidget" name="tabWidget"/>
+        <widget class="QStackedWidget" name="stackedWidget_2"/>
        </item>
       </layout>
      </widget>

@@ -27,18 +27,18 @@ void bleUartWindow::init()
     gridlayout     = new QGridLayout(WidgetContents);
 
     button_add_bleUart = new QPushButton(WidgetContents);
-    button_add_bleUart->setMaximumHeight(20); //limit size
-    button_add_bleUart->setMaximumWidth(40);
+    button_add_bleUart->setMaximumHeight(30); //limit size
+    button_add_bleUart->setMaximumWidth(80);
     button_add_bleUart->setText("add");
 
     button_load_bleUart = new QPushButton(WidgetContents);
-    button_load_bleUart->setMaximumHeight(20); //limit size
-    button_load_bleUart->setMaximumWidth(40);
+    button_load_bleUart->setMaximumHeight(30); //limit size
+    button_load_bleUart->setMaximumWidth(80);
     button_load_bleUart->setText("load");
 
     button_save_bleUart = new QPushButton(WidgetContents);
-    button_save_bleUart->setMaximumHeight(20); //limit size
-    button_save_bleUart->setMaximumWidth(40);
+    button_save_bleUart->setMaximumHeight(30); //limit size
+    button_save_bleUart->setMaximumWidth(80);
     button_save_bleUart->setText("save");
 
     gridlayout->addWidget(button_add_bleUart,0,0);
@@ -52,7 +52,7 @@ void bleUartWindow::init()
     MainWindow::mutualUi->creatNewDockWindow(dockBleUart, Qt::TopDockWidgetArea,  false);
     dockBleUart->setWidget(WidgetContents);
 
-    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn = new QToolButton(this);              //创建QToolButton
     //toolBtn1->setIcon(QIcon(":/src/menu.png"));                 //添加图标
     toolBtn->setText(dockBleUart->windowTitle());
     //toolBtn1->setFixedSize(30,20);                              //调图标大小（不是setIconSize)
@@ -79,6 +79,7 @@ void bleUartWindow::closeWindow()
     }else{
         dockBleUart->setVisible(true);
     }
+    toolBtn->setChecked(true);
 }
 
 //  dynamic add button
@@ -112,7 +113,7 @@ void bleUartWindow::addButton()
     if (firstbutton == nullptr){
         qDebug() << "firstbutton is null";
         firstbutton = new myQPushButton(WidgetContents);
-        firstbutton->setMaximumHeight(20); //limit size
+        firstbutton->setMaximumHeight(30); //limit size
         firstbutton->setMaximumWidth(100);
         firstbutton->setText(buttonName);
         firstbutton->nextButton = nullptr;
@@ -264,7 +265,7 @@ void bleUartWindow::loadFile(bool b)
         if (i == 0){
             myQPushButton *newbutton = nullptr;
             newbutton = new myQPushButton(WidgetContents);
-            newbutton->setMaximumHeight(20); //limit size
+            newbutton->setMaximumHeight(30); //limit size
             newbutton->setMaximumWidth(100);
             newbutton->setText(list.at(i));
             newbutton->cmd = list.at(i + 1);
@@ -277,7 +278,7 @@ void bleUartWindow::loadFile(bool b)
         {
             myQPushButton *newbutton = nullptr;
             newbutton = new myQPushButton(WidgetContents);
-            newbutton->setMaximumHeight(20); //limit size
+            newbutton->setMaximumHeight(30); //limit size
             newbutton->setMaximumWidth(100);
             newbutton->setText(list.at(i));
             newbutton->cmd = list.at(i + 1);

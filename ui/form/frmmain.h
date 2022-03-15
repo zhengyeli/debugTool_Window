@@ -30,6 +30,8 @@ private:
     QList<int> iconsConfig;
     QList<QAbstractButton *> btnsConfig;
 
+    QList<int> iconsBleDebugUi;
+    QList<QAbstractButton *> btnsBleDebugUi;
 
 private:
     //根据QSS样式获取对应颜色值
@@ -54,6 +56,11 @@ private slots:
     void initLeftConfig();
     void leftMainClick();
     void leftConfigClick();
+
+    // 串口调试
+
+    // 蓝牙调试
+    void initRightToolBar();
 
 private slots:
     void on_btnMenu_Min_clicked();

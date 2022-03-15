@@ -22,10 +22,10 @@ void blelinkwindow::init()
     //dockWidgetContents->setGeometry(QRect(10, 10, 100, 400)); // 从屏幕上（10，10）位置开始（即为最左上角的点），显示一个30*35的界面（宽30，高35）
 
     /* 所有控件 */
-    text_sku = new QTextEdit(dockWidgetContents);
+    text_sku = new QLineEdit(dockWidgetContents);
         text_sku->setText("7160");
         text_sku->setMaximumSize(200, 25);
-    text_ble_send = new QTextEdit(dockWidgetContents);
+    text_ble_send = new QLineEdit(dockWidgetContents);
         text_ble_send->setText("aa01");
         text_ble_send->setMaximumSize(200, 25);
     button_scan_sku = new QPushButton(dockWidgetContents);
@@ -109,7 +109,7 @@ void blelinkwindow::init()
     // 进行布局
     MainWindow::mutualUi->creatNewDockWindow(dockblelink, Qt::TopDockWidgetArea, false);
 
-    QToolButton *toolBtn = new QToolButton(this);              //创建QToolButton
+    toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(dockblelink->windowTitle());
     MainWindow::mutualUi->toolbar->connect(toolBtn, &QToolButton::clicked, this, &blelinkwindow::closeWindow);
     MainWindow::mutualUi->toolbar->addWidget(toolBtn);                               //向工具栏添加QToolButton按钮
@@ -126,18 +126,19 @@ void blelinkwindow::closeWindow()
     }else{
         dockblelink->setVisible(true);
     }
+    toolBtn->setChecked(true);
 }
 
 void blelinkwindow::scanButton_clicked()
 {
-    MainWindow::mutualUi->deviceFinder->sku = text_sku->toPlainText();
+    MainWindow::mutualUi->deviceFinder->sku = text_sku->text();
     sku_list->clear(); //清除sku list
     MainWindow::mutualUi->deviceFinder->startSearch();
 }
 
 void blelinkwindow::sendButton_clicked()
 {
-    QString data = text_ble_send->toPlainText();
+    QString data = text_ble_send->text();
     QByteArray array = data.toUtf8(); //"aa11"
     cmd_send->setText(array);
     MainWindow::mutualUi->ble_send(array);

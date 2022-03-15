@@ -87,6 +87,8 @@ public:
     ~MainWindow();
     QMenuBar* pMenuBar;
     QToolBar* toolbar;
+    //QWidget *toolbar;
+    QToolButton *toolBtn = nullptr;
 
     QDockWidget *DockWidgetsocket, *DockWidgetBleUart, *DockWidgetblelink, *DockWigetbleDebug, *DockwidgetInfo, *DockwidgetWifiConfig;
     ConnectionHandler *connectionHandler;
@@ -102,11 +104,7 @@ public:
 
 private slots:
     void fileSave();
-
-    void menu_action_resetWindow();
-    void menu_action_restoreWindow();
-    void menu_action_saveWindow();
-    void menu_action_closeAllWindow();
+    void resetWindow();
 
 public:
     Ui::MainWindow *ui;
@@ -124,5 +122,6 @@ public:
 
     void creatNewDockWindow(QDockWidget *w, Qt::DockWidgetArea, bool mix);
     void closeAllWindow();
+    void selectFunction(int i);
 };
 #endif // MAINWINDOW_H

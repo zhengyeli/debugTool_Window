@@ -55,10 +55,11 @@ private:
     bool lastip[255] = {false};
 
     QPushButton *button_set_wifi;
-    QTextEdit *text_Ssid,*text_Password;
+    QLineEdit *text_Ssid,*text_Password;
 public:
     QDockWidget *dockSocket;
     static tcpSocketClient *Client;
+    QToolButton *toolBtn = nullptr;
 };
 
 #endif // TCPSOCKETCLIENT_H

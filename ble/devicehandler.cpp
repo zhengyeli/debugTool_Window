@@ -171,6 +171,9 @@ void DeviceHandler::setDevice(DeviceInfo *device)
             m_control->discoverServices();
         });
         connect(m_control, &QLowEnergyController::disconnected, this, [this]() {
+            if (timer){
+                timer->stop();
+            }
             setError("LowEnergy controller disconnected");
         });
 
