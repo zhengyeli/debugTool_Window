@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
         }else{
             DockwidgetInfo->setVisible(true);
         }
+        toolBtn->setChecked(true);
     });
 
     //----------------------------------------- other window
@@ -194,7 +195,15 @@ void MainWindow::readSettings()
     restoreState(settings.value("state").toByteArray());
     resize(settings.value("size").toSize());
     settings.endGroup();
-    qDebug() << "恢复窗口";
+
+    QList<QToolButton*> btn = toolbar->findChildren<QToolButton*>();
+    for(int i = 0; i < btn.size(); i++)
+    {
+       if (btn.at(i)->isChecked()){
+           btn.at(i)->click();
+       }
+    }
+    SetInfo("恢复窗口");
 }
 
 // 存储当前界面布局信息
@@ -206,7 +215,8 @@ void MainWindow::saveSettings()
     settings.setValue("size", size());
     settings.setValue("state", saveState());
     settings.endGroup();
-    qDebug() << "保存窗口";
+    SetInfo("保存窗口");
+
 /*
     //寻找所有的dockwidget
     QList<QDockWidget*> docks = this->findChildren<QDockWidget*>();
