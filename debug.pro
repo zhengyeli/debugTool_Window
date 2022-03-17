@@ -5,6 +5,8 @@ QT       += core gui
 QT       += qml quick bluetooth
 QT       += network
 
+#把所有警告都关掉眼不见为净
+CONFIG += warn_off
 CONFIG += c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS

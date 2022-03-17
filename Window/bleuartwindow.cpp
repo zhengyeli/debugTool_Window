@@ -14,7 +14,6 @@ bleUartWindow::bleUartWindow(QWidget *parent)
     init();
 }
 
-
 void bleUartWindow::init()
 {
     dockBleUart = new QDockWidget(this);
@@ -175,7 +174,7 @@ void bleUartWindow::addButton()
 
 void bleUartWindow::bleSendData(myQPushButton* temp)
 {
-    qDebug() << temp->cmd.toUtf8(); //"aa11"
+    qDebug() << "cmd" << temp->cmd.toUtf8(); //"aa11"
     QByteArray array = temp->cmd.toUtf8(); //"aa11"
     MainWindow::mutualUi->ble_send(array);
 }
@@ -193,7 +192,7 @@ void bleUartWindow::saveFile()
         buf += temp->text().toUtf8();
         buf += "+";
         buf += temp->cmd.toUtf8();
-        buf += "+";
+        buf += '\n';
         temp = temp->nextButton;
     }
 
@@ -256,32 +255,39 @@ void bleUartWindow::loadFile(bool b)
         delete temp;
     }
 
+    //a.  QString::trimmed()函数：移除字符串两端的空白符 \r ''
+    //b.  QString::simplified()函数：移除字符串两端的空白字符 \t \r
     //dockBleUart->close();
-
-    QList<QByteArray> list = buf.split('+');
-    for (int i = 0; i < list.count() - 1; i++)
+    QList<QByteArray> list = buf.split('\r\n');
+    for (int i = 0; i < list.count(); i++)
     {
-        qDebug() << list.at(i) << i << list.count();
+        if (list.at(i) == ""){
+            continue;
+        }
+        QList<QByteArray> btn = list.at(i).split('+');
+        //qDebug() << list.at(i) << i << list.count();
+        qDebug() << btn.at(0) << btn.at(1) << btn.at(1).trimmed();
+
         if (i == 0){
             myQPushButton *newbutton = nullptr;
             newbutton = new myQPushButton(WidgetContents);
             newbutton->setMaximumHeight(30); //limit size
             newbutton->setMaximumWidth(100);
-            newbutton->setText(list.at(i));
-            newbutton->cmd = list.at(i + 1);
+            newbutton->setText(btn.at(0).trimmed());
+            newbutton->cmd = btn.at(1).trimmed();
             firstbutton = newbutton;
             firstbutton->nextButton = nullptr;
             firstbutton->prevButton = nullptr;
             temp = firstbutton;
         }
-        else if (i % 2 == 0)
+        else
         {
             myQPushButton *newbutton = nullptr;
             newbutton = new myQPushButton(WidgetContents);
             newbutton->setMaximumHeight(30); //limit size
             newbutton->setMaximumWidth(100);
-            newbutton->setText(list.at(i));
-            newbutton->cmd = list.at(i + 1);
+            newbutton->setText(btn.at(0).trimmed());
+            newbutton->cmd = btn.at(1).trimmed();
             newbutton->prevButton = temp;
             newbutton->nextButton = nullptr;
 
@@ -293,7 +299,7 @@ void bleUartWindow::loadFile(bool b)
     temp = firstbutton;
     while (temp != nullptr)
     {
-        qDebug() << temp->text();
+        //qDebug() << temp->text();
         connect(temp,SIGNAL(myclick(myQPushButton*)),this,SLOT(bleSendData(myQPushButton*)));
         if (row < maxrow)
         {
@@ -307,8 +313,6 @@ void bleUartWindow::loadFile(bool b)
             gridlayout->addWidget(temp,line,row);
             row = 1;
         }
-
         temp = temp->nextButton;
     }
-
 }
