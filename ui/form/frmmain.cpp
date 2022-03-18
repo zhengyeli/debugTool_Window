@@ -15,6 +15,7 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     // my code
     MainWindow *w = new MainWindow(this);
     w->tetoutput = ui->tetoutput;
+    ui->tetoutput->setStyleSheet("border:none");
     w->setWindowTitle("这是窗口的标题名字");
     ui->stackedWidget_2->addWidget(w);
 
@@ -227,7 +228,7 @@ void frmMain::initRightToolBar()
     styleColor.iconHeight = 20;
     styleColor.borderWidth = 3;
     styleColor.borderColor = borderColor;
-    styleColor.setColor(normalBgColor, normalTextColor, darkBgColor, darkTextColor);
+    styleColor.setColor(normalBgColor, normalTextColor,darkBgColor , darkTextColor);
     IconHelper::setStyle(MainWindow::mutualUi->toolbar, btnsBleDebugUi, iconsBleDebugUi, styleColor);
 
     QList<QToolButton*> btn = MainWindow::mutualUi->toolbar->findChildren<QToolButton*>();

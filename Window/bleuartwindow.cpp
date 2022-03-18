@@ -221,7 +221,6 @@ void bleUartWindow::loadFile(bool b)
         dir = QFileDialog::getOpenFileName(qwidget,"load file","",nullptr);
     }
 
-    qDebug() << dir;
     if (dir == nullptr){
         return;
     }
@@ -238,7 +237,6 @@ void bleUartWindow::loadFile(bool b)
     buf = file.readAll();
     file.close();
 
-    qDebug() << buf;
     myQPushButton *temp = firstbutton;
     if (firstbutton != nullptr)
     {
@@ -266,7 +264,7 @@ void bleUartWindow::loadFile(bool b)
         }
         QList<QByteArray> btn = list.at(i).split('+');
         //qDebug() << list.at(i) << i << list.count();
-        qDebug() << btn.at(0) << btn.at(1) << btn.at(1).trimmed();
+        //qDebug() << btn.at(0) << btn.at(1) << btn.at(1).trimmed();
 
         if (i == 0){
             myQPushButton *newbutton = nullptr;

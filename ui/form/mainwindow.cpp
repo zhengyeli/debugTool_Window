@@ -36,20 +36,21 @@ MainWindow::MainWindow(QWidget *parent)
     DockwidgetInfo->setObjectName("软件输出信息");
     DockwidgetInfo->setWindowTitle("信息");
     DockwidgetInfo->setVisible(false);
+    DockwidgetInfo->setStyleSheet("border:none");
     addDockWidget(Qt::BottomDockWidgetArea, DockwidgetInfo);
 
     //----------------------------------------- 在工具栏添加图标按钮
     toolbar = new QToolBar(this);
-    toolbar->setObjectName("tool bar");
-    toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    toolbar->setObjectName("toolbar");
+    toolbar->setWindowTitle("toolbar");
+    toolbar->setMovable(false);
+    //toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     //toolbar->setFixedWidth(80);
     //toolbar->setGeometry(0,0,0,0);
     //toolbar->setContentsMargins(0,0,0,0);
 
     toolBtn = new QToolButton(this);              //创建QToolButton
     toolBtn->setText(DockwidgetInfo->windowTitle());
-    //toolBtn->setGeometry(0,0,0,0);
-    //toolBtn->setContentsMargins(0,0,0,0);
     toolbar->addWidget(toolBtn);
     addToolBar(Qt::RightToolBarArea, toolbar);
     toolbar->connect(toolBtn, &QToolButton::clicked, this, [this]{
@@ -82,6 +83,23 @@ MainWindow::MainWindow(QWidget *parent)
             "5. debug : view dev debug message via ble\n"
             );
 
+
+    setStatusBar(nullptr);
+    setMenuBar(nullptr);
+
+
+    QList<QDockWidget*> docks = this->findChildren<QDockWidget*>();
+    for(int i = 0; i < docks.size(); i++)
+    {
+       docks.at(i)->setFeatures(QDockWidget::DockWidgetClosable |
+                                QDockWidget::DockWidgetMovable  |
+                                QDockWidget::DockWidgetFloatable);
+
+       Q_FOREACH(QTabBar* tab, docks.at(i)->findChildren<QTabBar *>())
+       {
+           tab->setDrawBase(false);
+       }
+    }
     readSettings();
 }
 

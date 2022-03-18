@@ -313,8 +313,15 @@ void IconHelper::setStyle1(QWidget *widget, QList<QAbstractButton *> btns, QList
         .arg(position).arg(strBorder).arg(styleColor.borderColor).arg(styleColor.checkedTextColor).arg(styleColor.checkedBgColor);
 
     //窗体背景颜色+按钮背景颜色
-    qss << QString("QWidget#%1{background:%2;}")
-        .arg(widget->objectName()).arg(styleColor.normalBgColor);
+    if (widget->objectName() == "toolbar"){
+        qss << QString("QWidget#%1{background-color:%2;border-width:0px;padding-bottom:0px;padding-top:0px;border-color:%3}")
+            .arg(widget->objectName()).arg(styleColor.normalBgColor).arg(styleColor.normalBgColor);
+    }else{
+        qss << QString("QWidget#%1{background:%2;border-width:0px;}")
+            .arg(widget->objectName()).arg(styleColor.normalBgColor);
+    }
+
+
     qss << QString("QWidget>QAbstractButton{border-width:0px;background-color:%1;color:%2;}")
         .arg(styleColor.normalBgColor).arg(styleColor.normalTextColor);
     qss << QString("QWidget>QAbstractButton:hover{background-color:%1;color:%2;}")
