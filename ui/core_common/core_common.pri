@@ -20,6 +20,8 @@ CONFIG += resources_big
 #引入全志H3芯片依赖
 include ($$PWD/h3.pri)
 
+INCLUDEPATH += $$PWD
+
 HEADERS += \
     $$PWD/appdata.h \
     $$PWD/appinit.h \

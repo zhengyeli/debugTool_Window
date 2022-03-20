@@ -1,8 +1,10 @@
 ﻿#ifndef APPDATA_H
 #define APPDATA_H
 
-#include "mainwindow.h"
-
+#include "main.h"
+QT_BEGIN_NAMESPACE
+namespace mainUi { class AppData; }
+QT_END_NAMESPACE
 class AppData
 {
 public:

@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qrc/1.png</file>
+        <file>qrc/2.png</file>
+        <file>qrc/3.png</file>
+        <file>qrc/4.png</file>
+        <file>qrc/5.png</file>
+        <file>qrc/6.png</file>
+        <file>qrc/7.png</file>
+        <file>qrc/8.png</file>
+        <file>qrc/9.png</file>
+        <file>qrc/menu.png</file>
+    </qresource>
+</RCC>

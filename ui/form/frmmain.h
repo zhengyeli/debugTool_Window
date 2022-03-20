@@ -2,7 +2,6 @@
 #define FRMMAIN_H
 
 #include <QWidget>
-#include "mainwindow.h"
 
 class QAbstractButton;
 

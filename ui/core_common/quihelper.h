@@ -1,7 +1,7 @@
 ﻿#ifndef QUIHELPER2_H
 #define QUIHELPER2_H
 
-#include "mainwindow.h"
+#include "main.h"
 
 class QUIHelper
 {

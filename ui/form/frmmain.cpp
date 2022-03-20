@@ -4,6 +4,9 @@
 #include "ui_frmmain.h"
 #include "iconhelper.h"
 #include "quihelper.h"
+
+#include "mainwindow.h"
+
 MainWindow *win1;
 
 QList<QString> tbtnConfigNameArray = {"保存窗口设置","恢复窗口设置", "恢复默认设置", "调试信息另存"};
