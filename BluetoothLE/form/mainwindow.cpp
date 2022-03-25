@@ -203,7 +203,6 @@ void MainWindow::selectFunction(int i)
     }
 }
 
-
 //读取上次界面信息
 void MainWindow::readSettings()
 {

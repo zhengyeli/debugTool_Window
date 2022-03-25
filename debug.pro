@@ -7,15 +7,18 @@ greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
 CONFIG       += warn_off
 CONFIG       += c++11
-
 DEFINES      += QT_DEPRECATED_WARNINGS
 
+#DESTDIR     = $$PWD/../bin
 
 include ($$PWD/ui/form/form.pri)
 
 include ($$PWD/ui/core_common/core_common.pri)
 
 include ($$PWD/BluetoothLE/ble.pri)
+
+#include ($$PWD/SerialPort/SerialPort.pri)comtool
+include ($$PWD/SerialPort/comtool/comtool.pro)
 
 INCLUDEPATH  += $$PWD/main.h
 HEADERS      += $$PWD/main.h

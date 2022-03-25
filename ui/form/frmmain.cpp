@@ -6,8 +6,7 @@
 #include "quihelper.h"
 
 #include "mainwindow.h"
-
-MainWindow *win1;
+#include "frmcomtool.h"
 
 QList<QString> tbtnConfigNameArray = {"保存窗口设置","恢复窗口设置", "恢复默认设置", "调试信息另存"};
 
@@ -21,6 +20,9 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     ui->tetoutput->setStyleSheet("border:none");
     w->setWindowTitle("这是窗口的标题名字");
     ui->stackedWidget_2->addWidget(w);
+
+    frmComTool *tool = new frmComTool(this);
+    ui->tabWidget->addTab(tool, "COMX");
 
     this->initForm();
     this->initStyle();
@@ -90,7 +92,7 @@ void frmMain::initForm()
     ui->labTitle->setText("智能访客管理平台");
     this->setWindowTitle(ui->labTitle->text());
 
-    ui->stackedWidget->setStyleSheet("QLabel{font:60px;}");
+    //ui->stackedWidget->setStyleSheet("QLabel{font:60px;}");
 
     QSize icoSize(32, 32);
     int icoWidth = 85;
@@ -255,7 +257,6 @@ void frmMain::leftMainClick()
         btn->setChecked(btn == b);
     }
 
-    ui->lab1->setText(name);
 }
 
 void frmMain::leftConfigClick()
