@@ -17,6 +17,8 @@ public:
     explicit frmMain(QWidget *parent = 0);
     ~frmMain();
 
+
+
 protected:
     bool eventFilter(QObject *watched, QEvent *event);
 
@@ -57,6 +59,9 @@ private slots:
     void leftConfigClick();
 
     // 串口调试
+    void comToolWidget_init();
+    void comToolWidget_AbbCom();
+    void comToolWidget_RemoveTab(int);
 
     // 蓝牙调试
     void initRightToolBar();

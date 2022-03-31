@@ -21,8 +21,7 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     w->setWindowTitle("这是窗口的标题名字");
     ui->stackedWidget_2->addWidget(w);
 
-    frmComTool *tool = new frmComTool(this);
-    ui->tabWidget->addTab(tool, "COMX");
+    comToolWidget_init();
 
     this->initForm();
     this->initStyle();
@@ -35,6 +34,44 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 frmMain::~frmMain()
 {
     delete ui;
+}
+
+void frmMain::comToolWidget_init()
+{
+    // enable tab close button
+    ui->tabWidget->setTabsClosable(true);
+    // enable tab move
+    ui->tabWidget->setMovable(true);
+    // disable home tab close button
+    ((QTabBar* )ui->tabWidget->tabBar())->setTabButton(0, QTabBar::RightSide, NULL);
+    // font size
+    QFont font;
+    font.setPixelSize(25);
+    ui->lb_home->setFont(font);
+    ui->lb_home->setText("Hallo World!!!");
+    //ui->lb_home->setPixmap(QPixmap(":/image/GOVEE_BLACK1.png"));
+
+    connect(ui->btAbbCom, SIGNAL(clicked(bool)),         this,SLOT(comToolWidget_AbbCom()));
+    connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(comToolWidget_RemoveTab(int)));
+}
+
+void frmMain::comToolWidget_RemoveTab(int index)
+{
+    ui->tabWidget->removeTab(index);
+}
+
+void frmMain::comToolWidget_AbbCom()
+{
+#ifdef FRMCOMTOOL_H
+    frmComTool *tool = new frmComTool(this);
+    tool->tabIndex = ui->tabWidget->addTab(tool, "comX");
+    tool->Tab = ui->tabWidget;
+    //this->initForm();
+    this->initStyle();
+    ui->tabWidget->setCurrentIndex(tool->tabIndex);
+#else
+
+#endif
 }
 
 bool frmMain::eventFilter(QObject *watched, QEvent *event)
@@ -80,7 +117,6 @@ void frmMain::initForm()
     IconHelper::setIcon(ui->btnMenu_Max, 0xf067);
     IconHelper::setIcon(ui->btnMenu_Close, 0xf00d);
 
-    //ui->widgetMenu->setVisible(false);
     ui->widgetTitle->setProperty("form", "title");
     //关联事件过滤器用于双击放大
     ui->widgetTitle->installEventFilter(this);
@@ -295,7 +331,7 @@ void frmMain::on_btnMenu_Max_clicked()
         this->setGeometry(QUIHelper::getScreenRect());
     }
 
-    this->setProperty("canMove", max);
+    this->setProperty("canMove", true);
     max = !max;
 }
 

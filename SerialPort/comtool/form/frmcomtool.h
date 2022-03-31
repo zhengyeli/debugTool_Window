@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "qtcpsocket.h"
 #include "qextserialport.h"
-#include <QScrollBar>
+#include <QTabWidget>
 
 namespace Ui
 {
@@ -19,6 +19,8 @@ public:
     explicit frmComTool(QWidget *parent = 0);
     ~frmComTool();
     bool eventFilter(QObject *, QEvent *);//对目标对象调用installEventFilter()来注册监视对象(事件过滤器);
+    int tabIndex;
+    QTabWidget *Tab;
 
 private:
     Ui::frmComTool *ui;

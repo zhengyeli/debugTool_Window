@@ -94,6 +94,9 @@ void frmComTool::initConfig()
     for (const QSerialPortInfo &info : infos) {
         comList << info.portName();
     }
+    if (infos.isEmpty()){
+        ui->btnOpen->setText("扫描");
+    }
 
     ui->cboxPortName->addItems(comList);
     ui->cboxPortName->setCurrentIndex(ui->cboxPortName->findText(AppConfig::PortName));
@@ -526,6 +529,8 @@ void frmComTool::on_btnOpen_clicked()
         comOk = com->open(QIODevice::ReadWrite);
 
         if (comOk) {
+            //改变tab名字
+            Tab->setTabText(tabIndex, ui->cboxPortName->currentText());
             //清空缓冲区
             com->flush();
             //设置波特率
@@ -543,7 +548,18 @@ void frmComTool::on_btnOpen_clicked()
             ui->btnOpen->setText("关闭串口");
             timerRead->start();
         }
-    } else {
+    } else if (ui->btnOpen->text() == "扫描"){
+        QStringList comList ;
+        const auto infos = QSerialPortInfo::availablePorts();
+        for (const QSerialPortInfo &info : infos) {
+            comList << info.portName();
+        }
+        if (infos.isEmpty()){
+            ui->btnOpen->setText("扫描");
+        }
+
+        ui->cboxPortName->addItems(comList);
+    }else{
         timerRead->stop();
         com->close();
         com->deleteLater();
