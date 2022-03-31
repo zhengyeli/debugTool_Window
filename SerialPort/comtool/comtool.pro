@@ -2,7 +2,7 @@ QT += core gui network serialport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
-RC_FILE     = qrc/comtool_main.rc
+RC_FILE      = $$PWD/qrc/comtool_main.rc
 
 HEADERS     += $$PWD/head.h
 RESOURCES   += $$PWD/qrc/comtool_main.qrc
