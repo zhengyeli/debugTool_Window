@@ -256,7 +256,13 @@ void bleUartWindow::loadFile(bool b)
     //a.  QString::trimmed()函数：移除字符串两端的空白符 \r ''
     //b.  QString::simplified()函数：移除字符串两端的空白字符 \t \r
     //dockBleUart->close();
-    QList<QByteArray> list = buf.split('\r\n');
+#ifdef Q_OS_WIN
+    QList<QByteArray> list = buf.split('\n');
+#else
+    QList<QByteArray> list = buf.split('\n');
+#endif
+    //qDebug() << buf;
+
     for (int i = 0; i < list.count(); i++)
     {
         if (list.at(i) == ""){
@@ -313,4 +319,5 @@ void bleUartWindow::loadFile(bool b)
         }
         temp = temp->nextButton;
     }
+
 }

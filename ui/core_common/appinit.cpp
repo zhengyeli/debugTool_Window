@@ -113,7 +113,7 @@ bool AppInit::eventFilter(QObject *watched, QEvent *event)
 //    qDebug() << "mouseEvent->type()" << mouseEvent->type();
 //    qDebug() << "watched->objectName()" << watched->objectName() ;
     if (mouseEvent->type() == QEvent::MouseButtonPress) {
-        qDebug() <<  mouseEvent->pos();
+        //qDebug() <<  mouseEvent->pos();
         if (mouseEvent->button() == Qt::LeftButton) {
             if (w->objectName().compare("frmMain") == 0) {
                 mousePoint = mouseEvent->globalPos() - windowPos;

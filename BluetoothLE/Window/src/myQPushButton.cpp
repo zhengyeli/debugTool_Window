@@ -1,6 +1,6 @@
 #include "myQPushButton.h"
 
-myQPushButton::myQPushButton(QObject *parent) : QPushButton((QWidget *)parent),
+myQPushButton::myQPushButton(QObject *parent) : QToolButton((QWidget *)parent),
     t_PressTimer(nullptr),
     i_PressTimeSave(0),
     b_longpress(false),

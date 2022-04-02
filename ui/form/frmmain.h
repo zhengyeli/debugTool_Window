@@ -16,6 +16,7 @@ class frmMain : public QWidget
 public:
     explicit frmMain(QWidget *parent = 0);
     ~frmMain();
+    static void frmMain_need_initStyle();
 
 
 
@@ -60,7 +61,7 @@ private slots:
 
     // 串口调试
     void comToolWidget_init();
-    void comToolWidget_AbbCom();
+    void comToolWidget_AbbCom(int);
     void comToolWidget_RemoveTab(int);
 
     // 蓝牙调试

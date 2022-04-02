@@ -1,13 +1,14 @@
 #ifndef MYQPUSHBUTTON_H
 #define MYQPUSHBUTTON_H
 
-#include <QPushButton>                //浮动窗口
+#include <QPushButton>
+#include <QToolButton>
 #include <QTimer>
 #include <QWidget>
 #include <QMessageBox>
 #include <QInputDialog>
 
-class myQPushButton : public QPushButton
+class myQPushButton : public QToolButton
 {
     Q_OBJECT
     //Q_PROPERTY(QString error READ error WRITE setError NOTIFY errorChanged)

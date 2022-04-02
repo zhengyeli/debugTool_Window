@@ -9,10 +9,12 @@
 #include "frmcomtool.h"
 
 QList<QString> tbtnConfigNameArray = {"保存窗口设置","恢复窗口设置", "恢复默认设置", "调试信息另存"};
+frmMain *p = nullptr;
 
 frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
 {
     ui->setupUi(this);
+    p = this;
 
     // my code
     MainWindow *w = new MainWindow(this);
@@ -36,6 +38,12 @@ frmMain::~frmMain()
     delete ui;
 }
 
+void frmMain::frmMain_need_initStyle()
+{
+    p->initForm();
+    p->initStyle();
+}
+
 void frmMain::comToolWidget_init()
 {
     // enable tab close button
@@ -47,12 +55,14 @@ void frmMain::comToolWidget_init()
     // font size
     QFont font;
     font.setPixelSize(25);
-    ui->lb_home->setFont(font);
-    ui->lb_home->setText("Hallo World!!!");
-    //ui->lb_home->setPixmap(QPixmap(":/image/GOVEE_BLACK1.png"));
+    //ui->lb_home->setFont(font);
+    //ui->lb_home->setText("Hallo World!!!");
 
-    connect(ui->btAbbCom, SIGNAL(clicked(bool)),         this,SLOT(comToolWidget_AbbCom()));
+    comToolWidget_AbbCom(-1);
+
+    //connect(ui->btAbbCom, SIGNAL(clicked(bool)),         this,SLOT(comToolWidget_AbbCom()));
     connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(comToolWidget_RemoveTab(int)));
+    connect(ui->tabWidget,SIGNAL(tabBarClicked(int)),    this,SLOT(comToolWidget_AbbCom(int)));
 }
 
 void frmMain::comToolWidget_RemoveTab(int index)
@@ -60,15 +70,28 @@ void frmMain::comToolWidget_RemoveTab(int index)
     ui->tabWidget->removeTab(index);
 }
 
-void frmMain::comToolWidget_AbbCom()
+void frmMain::comToolWidget_AbbCom(int index)
 {
+
 #ifdef FRMCOMTOOL_H
-    frmComTool *tool = new frmComTool(this);
-    tool->tabIndex = ui->tabWidget->addTab(tool, "comX");
-    tool->Tab = ui->tabWidget;
-    //this->initForm();
-    this->initStyle();
-    ui->tabWidget->setCurrentIndex(tool->tabIndex);
+    if (index == -1 || ui->tabWidget->tabText(index) == "添加")
+    {
+        frmComTool *tool = new frmComTool(this);
+        tool->tabIndex = ui->tabWidget->addTab(tool, "comX");
+        tool->Tab = ui->tabWidget;
+        ui->tabWidget->setCurrentIndex(tool->tabIndex);
+
+        QWidget *dockWidgetContents = new QWidget(this);
+        // disable 添加 tab close button
+        ((QTabBar* )ui->tabWidget->tabBar())->setTabButton(
+                    ui->tabWidget->addTab(dockWidgetContents, "添加")
+                    , QTabBar::RightSide, NULL);
+
+
+        comToolWidget_RemoveTab(tool->tabIndex - 1);
+
+        this->initStyle();
+    }
 #else
 
 #endif
