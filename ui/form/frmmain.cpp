@@ -49,7 +49,7 @@ void frmMain::comToolWidget_init()
     // enable tab close button
     ui->tabWidget->setTabsClosable(true);
     // enable tab move
-    ui->tabWidget->setMovable(true);
+    //ui->tabWidget->setMovable(true);
     // disable home tab close button
     ((QTabBar* )ui->tabWidget->tabBar())->setTabButton(0, QTabBar::RightSide, NULL);
     // font size
@@ -76,6 +76,11 @@ void frmMain::comToolWidget_AbbCom(int index)
 #ifdef FRMCOMTOOL_H
     if (index == -1 || ui->tabWidget->tabText(index) == "添加")
     {
+        if (index == -1)
+           comToolWidget_RemoveTab(0);
+
+        comToolWidget_RemoveTab(index);
+
         frmComTool *tool = new frmComTool(this);
         tool->tabIndex = ui->tabWidget->addTab(tool, "comX");
         tool->Tab = ui->tabWidget;
@@ -86,9 +91,6 @@ void frmMain::comToolWidget_AbbCom(int index)
         ((QTabBar* )ui->tabWidget->tabBar())->setTabButton(
                     ui->tabWidget->addTab(dockWidgetContents, "添加")
                     , QTabBar::RightSide, NULL);
-
-
-        comToolWidget_RemoveTab(tool->tabIndex - 1);
 
         this->initStyle();
     }
