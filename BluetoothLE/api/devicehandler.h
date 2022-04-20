@@ -74,7 +74,7 @@ public:
     };
     Q_ENUM(AddressType)
 
-    DeviceHandler(QObject *parent = nullptr);
+    DeviceHandler(QObject *parent = nullptr, QTextEdit *infoTable = nullptr);
 
     void setDevice(DeviceInfo *device);
     void setAddressType(AddressType type);
@@ -86,17 +86,18 @@ signals:
     void aliveChanged();
     void statsChanged();
     void characteristicsUpdated();
+    void bleMessageChange(const QByteArray &value);
+    void disconnectOccur();
+    void connectSuccess();
 
 public slots:
     void disconnectService();
     void continueConnectService();
-    void keepalive();
 
 public:
     // QLowEnergyController
     void serviceDiscovered(const QBluetoothUuid &);
     void serviceScanDone();
-    void calculate(unsigned char *data);
 
     // QLowEnergyService
     void descriptorRead(const QLowEnergyDescriptor &d,const QByteArray &value);
@@ -109,21 +110,12 @@ public:
     void characteristicRead(const QLowEnergyCharacteristic &c,const QByteArray &value);
     void characteristicWrite(const QLowEnergyCharacteristic character ,const QByteArray &value);
 
-
-    // ble debug
-    void bledebugupdateInfoFromDev(const QLowEnergyCharacteristic &c,
-                              const QByteArray &value);
-    void bledebugdescriptorRead(const QLowEnergyDescriptor &d,
-                            const QByteArray &value);
-
-    void bledebugserviceStateChanged(QLowEnergyService::ServiceState s);
     QLowEnergyController *m_control = nullptr;
     QLowEnergyService *m_service = nullptr;
-    QLowEnergyService *m_service_bledebug = nullptr;
-    QLowEnergyDescriptor m_bledebugnotificationDesc, m_notificationDesc;
+    QLowEnergyDescriptor m_notificationDesc;
     DeviceInfo *m_currentDevice = nullptr;
-    QLowEnergyCharacteristic bledebugsetChar,setChar;
-    QLowEnergyCharacteristic bledebuggetChar,getChar;
+    QLowEnergyCharacteristic setChar;
+    QLowEnergyCharacteristic getChar;
 
     // Statistics
     QDateTime m_start;

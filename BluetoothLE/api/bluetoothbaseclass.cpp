@@ -49,10 +49,10 @@
 ****************************************************************************/
 
 #include "bluetoothbaseclass.h"
-#include "mainwindow.h"
 
-BluetoothBaseClass::BluetoothBaseClass(QObject *parent) : QObject(parent)
+BluetoothBaseClass::BluetoothBaseClass(QObject *parent, QTextEdit *text_info) : QObject(parent)
 {
+    tetoutput = text_info;
 }
 
 QString BluetoothBaseClass::error() const
@@ -67,27 +67,26 @@ QString BluetoothBaseClass::info() const
 
 void BluetoothBaseClass::setError(const QString &error)
 {
-    MainWindow::mutualUi->SetInfo("error :"+ error);
+    if (tetoutput != nullptr)
+    {
+        tetoutput->append("[api err]"+ error);
+    }
     qDebug() << error;
 }
 
 void BluetoothBaseClass::setInfo(const QString &info)
 {
-    MainWindow::mutualUi->SetInfo(info);
+    if (tetoutput != nullptr)
+    {
+        tetoutput->append("[api dbg]"+ info);
+    }
     qDebug() << info;
 }
 
 void BluetoothBaseClass::clearMessages()
 {
-    MainWindow::mutualUi->text_info->clear();
-}
-
-void BluetoothBaseClass::showMessages(QString str)
-{
-    MainWindow::mutualUi->showMsg(str);
-}
-
-void BluetoothBaseClass::addBleDevToList(QString str)
-{
-    blelinkwindow::addBleDevToList(str);
+    if (tetoutput != nullptr)
+    {
+        tetoutput->clear();
+    }
 }

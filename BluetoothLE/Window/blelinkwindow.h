@@ -10,11 +10,13 @@ class blelinkwindow : public QWidget
     Q_OBJECT
 public:
     explicit blelinkwindow(QWidget *parent = nullptr);
+    ~blelinkwindow();
     void init();
-    static void addBleDevToList(QString);
     static void receive(QString);
 
-private slots:
+public slots:
+    void addBleDevToList(const QBluetoothDeviceInfo& info);
+    void bleConnectSuccess();
     void scanButton_clicked();
     void sendButton_clicked();
     void bleDevlist_itemClicked(QListWidgetItem* i);
@@ -23,6 +25,7 @@ private slots:
     void continueButton_clicked();
     void clearButton_clicked();
     void closeWindow();
+    void keepalive();
 
 private:
     QPushButton * button_scan_sku,*button_ble_send ,*button_stop,*button_continue ,*button_discon, *button_clear;

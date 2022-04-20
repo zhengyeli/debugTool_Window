@@ -236,38 +236,15 @@ bool frmComTool::eventFilter(QObject *obj, QEvent *event)
             {
                 com->write(keyEvent->text().toLocal8Bit());
             }
-#if 0
-            switch (keyEvent->key())
-            {
-            case 16777219: // backspace
+#if 1
+            if (keyEvent->key() == 32) //空格
             {
                 //获取当前文本光标
                 QTextCursor cursor = ui->txtMain->textCursor();
                 //将光标移动到文本结尾
                 cursor.movePosition(QTextCursor::PreviousCharacter);
-                //判断当前是否选中了文本，如果选中了文本则取消选中的文本，再删除前一个字符
-                if(cursor.hasSelection())
-                cursor.clearSelection();
-                //删除前一个字符
-                cursor.deletePreviousChar();
-                cursor.movePosition(QTextCursor::End);
                 ui->txtMain->setTextCursor(cursor);
-                ui->txtMain->verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
-            }
-                break;
-            case 16777217: // tab
-            case 16777220: // enter
-            default:
-                QTextCursor cursor = ui->txtMain->textCursor();
-                cursor.deletePreviousChar();
-                ui->txtMain->insertPlainText(keyEvent->text());
-                ui->txtMain->setFontWeight(QFont::Weight::Bold);
-                ui->txtMain->insertPlainText("#");
-                ui->txtMain->setFontWeight(QFont::Weight::Normal);
-                cursor.movePosition(QTextCursor::End);
-                ui->txtMain->setTextCursor(cursor);
-                ui->txtMain->verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
-                break;
+                ui->txtMain->insertPlainText(" ");
             }
 #endif
             return true;
@@ -388,7 +365,6 @@ void frmComTool::append(int type, const QString &data, bool clear)
     if (type != 1)
     strData = QString("时间[%1] %2 \r\n%3").arg(TIMEMS).arg(strType).arg(strData);
 
-
     // 进度条在尾部，实时显示打印
     if (ui->txtMain->verticalScrollBar()->value() == ui->txtMain->verticalScrollBar()->maximum()){
         isinputText = true;
@@ -397,9 +373,11 @@ void frmComTool::append(int type, const QString &data, bool clear)
     }
     // 光标的处理
     QTextCursor cursor = ui->txtMain->textCursor();
+    cursor.movePosition(QTextCursor::End);
     cursor.deletePreviousChar();
+    ui->txtMain->setTextCursor(cursor);
 
-
+    // 文本替换
     strData.replace("ERR","<font color=red>ERR</font>",Qt::CaseSensitive);
     strData.replace("WARN","<font color=yellow>WARN</font>",Qt::CaseSensitive);
     strData.replace("INF","<font color=yellow>INF</font>",Qt::CaseSensitive);
@@ -427,6 +405,28 @@ void frmComTool::readData()
     int dataLen = data.length();
     if (dataLen <= 0) {
         return;
+    }
+
+    if (data.contains("\b \b")) // backspace
+    {
+        //qDebug() << data;
+        //获取当前文本光标
+        QTextCursor cursor = ui->txtMain->textCursor();
+        //将光标移动到文本结尾
+        cursor.movePosition(QTextCursor::PreviousCharacter);
+        //判断当前是否选中了文本，如果选中了文本则取消选中的文本，再删除前一个字符
+        if(cursor.hasSelection())
+            cursor.clearSelection();
+        //删除前一个字符
+        while (data.indexOf("\b \b") != -1)
+        {
+           //cursor.movePosition(QTextCursor::End);
+           cursor.deletePreviousChar();
+           ui->txtMain->setTextCursor(cursor);
+           data.remove(data.indexOf("\b \b"), data.indexOf("\b \b")+3);
+        }
+        ui->txtMain->verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
+        //data = data.replace("\b \b", "");
     }
 
     if (isShow) {

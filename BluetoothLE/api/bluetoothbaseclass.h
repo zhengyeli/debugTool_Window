@@ -53,6 +53,7 @@
 
 #include <QObject>
 #include <QDebug>
+#include "QTextEdit"
 
 //基础继承
 class BluetoothBaseClass : public QObject
@@ -62,8 +63,9 @@ class BluetoothBaseClass : public QObject
     Q_PROPERTY(QString info READ info WRITE setInfo NOTIFY infoChanged)
 
 public:
-    explicit BluetoothBaseClass(QObject *parent = nullptr);
+    explicit BluetoothBaseClass(QObject *parent = nullptr, QTextEdit *tetoutput = nullptr);
 
+    QTextEdit *tetoutput = nullptr;
     QString error() const;
     void setError(const QString& error);
 
@@ -71,8 +73,6 @@ public:
     void setInfo(const QString& info);
 
     void clearMessages();
-    void showMessages(QString);
-    void addBleDevToList(QString);
 
 signals:
     void errorChanged();

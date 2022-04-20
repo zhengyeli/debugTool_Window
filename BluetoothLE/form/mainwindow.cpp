@@ -3,13 +3,46 @@
 
 MainWindow *MainWindow::mutualUi = nullptr;
 
-MainWindow::MainWindow(QWidget *parent)
+// 蓝牙数据回调
+void MainWindow::ble_rx_data_func(const QByteArray &d)
+{
+    uint8_t msg[20] = {0};
+    QByteArray arraydata = d.toHex(); // "aa11"
+    calGetBleData(arraydata, msg);
+    qDebug() << "arraydata" << arraydata << arraydata[2];
+
+    uint8_t head = msg[0];
+    uint8_t type = msg[1];
+    uint8_t *data = (uint8_t*)msg + 2;
+
+    if (head == 0xaa)
+    {
+        switch (type)
+        {
+            case 0x06:
+            {
+                QString str;
+                str = "software version : " + (QString)(char*)data;
+                ShowInfo(str);
+            }
+            break;
+        }
+    }
+    else if (head == 0x33)
+    {
+
+    }
+    SetInfo("recd :" + arraydata.toHex(' '));
+}
+
+MainWindow::MainWindow(QWidget *parent, QTextEdit *textEdit)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     // first : mainwindow
     ui->setupUi(this);
     mutualUi = this;
+    tetoutput = textEdit;
 
     QWidget* p = takeCentralWidget();   //删除中央窗体，使用QDockWidget代替
     if (p)
@@ -67,12 +100,17 @@ MainWindow::MainWindow(QWidget *parent)
     blelink      = new blelinkwindow(this);
     SocketClient = new tcpSocketClient(this);
     bleuart      = new bleUartWindow(this);
-    bledebug     = new bledebugwindow(this);
+    //bledebug     = new bledebugwindow(this);
 
     //-----------------------------------------  sencond : ble api init
     connectionHandler = new ConnectionHandler();
-    deviceHandler = new DeviceHandler();
-    deviceFinder = new DeviceFinder(deviceHandler);
+    deviceHandler = new DeviceHandler(nullptr, tetoutput);
+    deviceFinder = new DeviceFinder(nullptr, deviceHandler, tetoutput);
+
+    connect(deviceFinder,  &DeviceFinder::scanDeviceResult,  blelink, &blelinkwindow::addBleDevToList);     // add ble dev name to list show
+    connect(deviceHandler, &DeviceHandler::bleMessageChange, this,    &MainWindow::ble_rx_data_func);       // msg from ble dev
+    connect(deviceHandler, &DeviceHandler::connectSuccess,   blelink, &blelinkwindow::bleConnectSuccess);   // discon statu occur
+    connect(deviceHandler, &DeviceHandler::disconnectOccur,  blelink, &blelinkwindow::disconButton_clicked);// discon statu occur
 
     SetInfo("tip :\n"
             "   window              usage        \n"
@@ -83,10 +121,8 @@ MainWindow::MainWindow(QWidget *parent)
             "5. debug : view dev debug message via ble\n"
             );
 
-
     setStatusBar(nullptr);
     setMenuBar(nullptr);
-
 
     QList<QDockWidget*> docks = this->findChildren<QDockWidget*>();
     for(int i = 0; i < docks.size(); i++)
@@ -108,7 +144,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::SetInfo(QString str)
+void MainWindow::ShowInfo(QString str)
 {
     if (!text_info){
         qDebug() << "text_info nullptr";
@@ -116,20 +152,40 @@ void MainWindow::SetInfo(QString str)
     }
     if (str == "clear"){
         text_info->clear();
-        if (tetoutput != nullptr)
-        tetoutput->clear();
     }
     text_info->append(str);
-    if (tetoutput != nullptr)
+}
+
+void MainWindow::SetInfo(QString str)
+{
+    if (!tetoutput){
+        qDebug() << "text_info nullptr";
+        return;
+    }
+    if (str == "clear"){
+        tetoutput->clear();
+    }
     tetoutput->append(str);
 }
 
-QByteArray MainWindow::calGetBleData(QByteArray array)
+// 计算校验和
+void MainWindow::calculate(uint8_t *data)
+{
+    uint8_t temp = 0;
+    for(int i = 0; i < 19; i++)
+    {
+        temp = temp ^ data[i];
+    }
+    data[19] = temp;
+}
+
+
+void MainWindow::calGetBleData(QByteArray &array, uint8_t *msg)
 {
     uint8_t parsedValue;
-    uchar senddata[20] = {0};
-    for (int i = 0; i < array.length(); i++)
+    for (int i = 0; i < array.size(); i++)
     {
+        //qDebug() << array.length() << array.size() << array[i];
         if ((i % 2) == 0) //字节的高四位
         {
             if (array[i] > '0' && array[i] <= '9')
@@ -140,23 +196,25 @@ QByteArray MainWindow::calGetBleData(QByteArray array)
                parsedValue = (array[i] - ('a'-'9' - 1) - '0') * 16;
         }else{ //字节的低四位
             if (array[i] >= '0' && array[i] <= '9')
-                senddata[i/2] = parsedValue + (array[i] - '0');
+                msg[i/2] = parsedValue + (array[i] - '0');
             if (array[i] >= 'A' && array[i] <= 'F')
-                senddata[i/2] = parsedValue + (array[i] - ('A'-'9' - 1) - '0');
+                msg[i/2] = parsedValue + (array[i] - ('A'-'9' - 1) - '0');
             if (array[i] >= 'a' && array[i] <= 'f')
-                senddata[i/2] = parsedValue + (array[i] - ('a'-'9' - 1) - '0');
+                msg[i/2] = parsedValue + (array[i] - ('a'-'9' - 1) - '0');
             parsedValue = 0;
         }
+        qDebug() << msg[i/2];
     }
-    deviceHandler->calculate(senddata);
-    array = QByteArray((char*)senddata,20);
-    return array;
+    calculate(msg);
+    array = QByteArray((char*)msg,20);
 }
 
 void MainWindow::ble_send(QByteArray array)
 {
-    array = calGetBleData(array);
     if (deviceHandler->setChar.isValid()){
+        uint8_t data[20] = {0};
+        calGetBleData(array, data);
+        SetInfo("send :" + array.toHex(' ')); // hex display split by ' '
         deviceHandler->characteristicWrite(deviceHandler->setChar,array);
     }
     else{
@@ -164,22 +222,9 @@ void MainWindow::ble_send(QByteArray array)
     }
 }
 
-void MainWindow::ble_debug_send(QByteArray array)
-{
-    array = calGetBleData(array);
-    if (deviceHandler->bledebugsetChar.isValid())
-    {
-        deviceHandler->characteristicWrite(deviceHandler->bledebugsetChar,array);
-    }
-    else
-    {
-        SetInfo("warning : deviceHandler.setChar is null");
-    }
-}
-
 void MainWindow::ble_char_send(uchar *array)
 {
-    deviceHandler->calculate(array);
+    calculate(array);
     QByteArray Array = QByteArray((char*)array,20);
     if (deviceHandler->setChar.isValid())
     {

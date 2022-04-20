@@ -2,6 +2,7 @@
 
 QListWidget *blelinkwindow::sku_list = nullptr;
 QLineEdit *blelinkwindow::cmd_receive = nullptr;
+QTimer *timer = nullptr;
 
 blelinkwindow::blelinkwindow(QWidget *parent)
     : QWidget{parent}
@@ -9,8 +10,21 @@ blelinkwindow::blelinkwindow(QWidget *parent)
     init();
 }
 
+blelinkwindow::~blelinkwindow()
+{
+    QSettings settings("Software Inc.","Icon Editor");
+    settings.beginGroup("blelinkwindow");
+    settings.setValue("sku", text_sku->text());
+    settings.endGroup();
+}
+
 void blelinkwindow::init()
 {
+
+    QSettings settings("Software Inc.","Icon Editor");
+    settings.beginGroup("blelinkwindow");
+    QString sku = settings.value("sku").toByteArray();
+    settings.endGroup();
     //----------------------------------------- 在界面添加窗口
     dockblelink = new QDockWidget(this);
     dockblelink->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
@@ -23,13 +37,16 @@ void blelinkwindow::init()
 
     /* 所有控件 */
     text_sku = new QLineEdit(dockWidgetContents);
+    if (sku.isEmpty())
         text_sku->setText("7160");
+    else
+        text_sku->setText(sku);
         text_sku->setMaximumSize(200, 25);
     text_ble_send = new QLineEdit(dockWidgetContents);
         text_ble_send->setText("aa01");
         text_ble_send->setMaximumSize(200, 25);
     button_scan_sku = new QPushButton(dockWidgetContents);
-        button_scan_sku->setText("扫描");
+        button_scan_sku->setText("scan");
     button_ble_send = new QPushButton(dockWidgetContents);
         button_ble_send->setText("发送");
     button_stop = new QPushButton(dockWidgetContents);
@@ -132,20 +149,39 @@ void blelinkwindow::closeWindow()
 void blelinkwindow::scanButton_clicked()
 {
     MainWindow::mutualUi->deviceFinder->sku = text_sku->text();
-    sku_list->clear(); //清除sku list
-    MainWindow::mutualUi->deviceFinder->startSearch();
+
+    if (button_scan_sku->text() == "scan")
+    {
+        sku_list->clear(); //清除sku list
+        MainWindow::mutualUi->deviceFinder->startSearch();
+        button_scan_sku->setText("stop");
+    }
+    else if (button_scan_sku->text() == "stop")
+    {
+        MainWindow::mutualUi->deviceFinder->stopSearch();
+        button_scan_sku->setText("scan");
+    }
 }
 
 void blelinkwindow::sendButton_clicked()
 {
+// QByteArray实际存的是一个个字符，例如
     QString data = text_ble_send->text();
-    QByteArray array = data.toUtf8(); //"aa11"
-    cmd_send->setText(array);
+//    QByteArray array1 = data.toUtf8();                           //"3132"
+//    qDebug() << array1[0] << array1[1];                          // output : 3 1
+//    QByteArray array = QByteArray::fromHex(data.toLatin1());     //"\x31\x32"
+//    qDebug() << array[0] << array[1];                            // output : 1 2
+    QByteArray array = data.toUtf8();
+//    /QByteArray array = QByteArray::fromHex(data.toLatin1());
+    cmd_send->setText(data.toUtf8());
     MainWindow::mutualUi->ble_send(array);
 }
 
 void blelinkwindow::disconButton_clicked()
 {
+    if (timer){
+        timer->stop();
+    }
     MainWindow::mutualUi->deviceHandler->disconnectDevice();
     MainWindow::mutualUi->SetInfo("disconnected");
 }
@@ -166,9 +202,37 @@ void blelinkwindow::bleDevlist_itemClicked(QListWidgetItem* item)
     MainWindow::mutualUi->deviceFinder->connectToService(item->data(0).toString());
 }
 
-void blelinkwindow::addBleDevToList(QString name)
+void blelinkwindow::bleConnectSuccess()
 {
-    sku_list->addItem(name);
+    // 心跳定时器
+    if (timer != nullptr){
+        timer->stop();
+        free(timer);
+        timer = nullptr;
+    }
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
+    timer->start(4000);
+
+    //! software version
+    QByteArray array("aa06");
+    MainWindow::mutualUi->ble_send(array);
+
+    MainWindow::mutualUi->showMsg("connect sucess");
+}
+
+void blelinkwindow::addBleDevToList(const QBluetoothDeviceInfo& device)
+{
+    if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+        if (text_sku->text().length() == 0)
+        {
+            sku_list->addItem(device.name());
+        }
+        else if (QString(device.name()).contains(text_sku->text(), Qt::CaseInsensitive)) // 匹配不区分大小写
+        {
+            sku_list->addItem(device.name());
+        }
+    }
 }
 
 void blelinkwindow::receive(QString str)
@@ -181,4 +245,12 @@ void blelinkwindow::clearButton_clicked()
     cmd_send->setText("");
     cmd_receive->setText("");
     MainWindow::mutualUi->SetInfo("clear");
+}
+
+void blelinkwindow::keepalive()
+{
+    //uint8_t data[20] = {0xaa,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    //QByteArray array = QByteArray((char *)data, 20);
+    QByteArray array("aa01");
+    MainWindow::mutualUi->ble_send(array);
 }

@@ -17,8 +17,7 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     p = this;
 
     // my code
-    MainWindow *w = new MainWindow(this);
-    w->tetoutput = ui->tetoutput;
+    MainWindow *w = new MainWindow(this, ui->tetoutput);
     ui->tetoutput->setStyleSheet("border:none");
     w->setWindowTitle("这是窗口的标题名字");
     ui->stackedWidget_2->addWidget(w);

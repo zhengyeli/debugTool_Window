@@ -54,7 +54,6 @@
 #include "devicehandler.h"
 #include "bluetoothbaseclass.h"
 
-#include <QTimer>
 #include <QVariant>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothDeviceInfo>
@@ -68,7 +67,7 @@ class DeviceFinder: public BluetoothBaseClass
     Q_OBJECT
 
 public:
-    DeviceFinder(DeviceHandler *handler, QObject *parent = nullptr);
+    DeviceFinder(QObject *parent = nullptr, DeviceHandler *handler = nullptr, QTextEdit *infoTable = nullptr);
     ~DeviceFinder();
 
     bool scanning() const;
@@ -76,6 +75,10 @@ public:
     void connectToService(const QString &address);
     /* 声明为公共静态的可以类外调用 */
     void startSearch();
+    void stopSearch();
+
+signals:
+    void scanDeviceResult(const QBluetoothDeviceInfo &info);
 
 private slots:
     void addDevice(const QBluetoothDeviceInfo&);

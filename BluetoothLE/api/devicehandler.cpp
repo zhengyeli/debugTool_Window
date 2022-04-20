@@ -50,14 +50,11 @@
 
 #include "devicehandler.h"
 #include "deviceinfo.h"
-#include "blelinkwindow.h"
 
-QTimer *timer = nullptr;
-
-DeviceHandler::DeviceHandler(QObject *parent) :
-    BluetoothBaseClass(parent)
+DeviceHandler::DeviceHandler(QObject *parent, QTextEdit *infoTable) :
+    BluetoothBaseClass(parent, infoTable)
 {
-
+    ;
 }
 
 void DeviceHandler::setAddressType(AddressType type)
@@ -83,40 +80,33 @@ DeviceHandler::AddressType DeviceHandler::addressType() const
 void DeviceHandler::searchCharacteristic()
 {
     const QList<QLowEnergyCharacteristic> chars = m_service->characteristics();
-    for (const QLowEnergyCharacteristic &ch : chars) {
+    for (const QLowEnergyCharacteristic &ch : chars)
+    {
         qDebug() << "found Characteristic uuid:" << ch.uuid();
     }
     // 订阅特性
     setChar = m_service->characteristic(QBluetoothUuid("00010203-0405-0607-0809-0a0b0c0d2b11"));
     getChar = m_service->characteristic(QBluetoothUuid("00010203-0405-0607-0809-0a0b0c0d2b10"));
-    if (!setChar.isValid()) {
+    if (!setChar.isValid())
+    {
         setError("setChar not found.");
         return;
-    }else if (!getChar.isValid()) {
+    }
+    else if (!getChar.isValid())
+    {
         setError("getChar not found.");
         return;
     }
 
-    //const QLowEnergyCharacteristic hrChar = m_service->characteristic(QBluetoothUuid::CharacteristicType::ServiceChanged); //character : 0x2a05
     m_notificationDesc = getChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration); //Descriptor : 0x2902
+
     if (m_notificationDesc.isValid())
     {
         //打开notification
         m_service->writeDescriptor(m_notificationDesc, QByteArray::fromHex("0100"));//使能通知
-        m_service->readDescriptor(m_notificationDesc);
-        m_service->readCharacteristic(getChar);
-
-        // 心跳定时器
-        if (timer != nullptr){
-            timer->stop();
-            free(timer);
-            timer = nullptr;
-        }
-        timer = new QTimer(this);
-        connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
-        timer->start(3000);
-
-        showMessages("connect sucess");
+        //m_service->readDescriptor(m_notificationDesc);
+        //m_service->readCharacteristic(getChar);
+        emit connectSuccess();
     }
     else
     {
@@ -130,10 +120,6 @@ void DeviceHandler::disconnectDevice()
         m_control->disconnectFromDevice();
         delete m_control;
         m_control = nullptr;
-    }
-    if (timer)
-    {
-        timer->stop();
     }
 }
 
@@ -172,9 +158,7 @@ void DeviceHandler::setDevice(DeviceInfo *device)
             m_control->discoverServices();
         });
         connect(m_control, &QLowEnergyController::disconnected, this, [this]() {
-            if (timer){
-                timer->stop();
-            }
+            emit disconnectOccur();
             setError("LowEnergy controller disconnected");
         });
 
@@ -205,11 +189,6 @@ void DeviceHandler::serviceScanDone()
         m_service = nullptr;
     }
 
-    if (m_service_bledebug) {
-        delete m_service_bledebug;
-        m_service_bledebug = nullptr;
-    }
-
     for (int i = 0; i < uuids.count(); i++)
     {
         if (uuids.at(i).toString() == "{00010203-0405-0607-0809-0a0b0c0d1910}")
@@ -217,20 +196,17 @@ void DeviceHandler::serviceScanDone()
             m_service = m_control->createServiceObject(QBluetoothUuid(uuids.at(i)),this);
             qDebug() << "select service:" << m_service->serviceName() << m_service->serviceUuid();
         }
-        else if (uuids.at(i).toString() == "{00010203-0405-0607-0809-0a0b0c0d2c00}")
-        {
-            m_service_bledebug = m_control->createServiceObject(QBluetoothUuid(uuids.at(i)),this);
-            qDebug() << "select m_service_bledebug:" << m_service_bledebug->serviceName() << m_service_bledebug->serviceUuid();
-        }
     }
 
-    if (!m_service && !m_service_bledebug){
-        setInfo("m_control->createServiceObject all fail");
+    if (!m_service){
+        setInfo("m_service fail");
         return;
     }
 
     if (m_service)
     {
+        connect(m_service, &QLowEnergyService::descriptorWritten, this, &DeviceHandler::confirmedDescriptorWrite);
+        // 服务状态改变
         connect(m_service, &QLowEnergyService::descriptorRead, this, &DeviceHandler::descriptorRead);
         // 服务状态改变
         connect(m_service, &QLowEnergyService::stateChanged, this, &DeviceHandler::serviceStateChanged);
@@ -247,21 +223,6 @@ void DeviceHandler::serviceScanDone()
     {
         setInfo("m_service is null");
     }
-
-    if (m_service_bledebug)
-    {
-        connect(m_service_bledebug, &QLowEnergyService::descriptorRead, this, &DeviceHandler::bledebugdescriptorRead);
-        // 服务状态改变
-        connect(m_service_bledebug, &QLowEnergyService::stateChanged, this, &DeviceHandler::bledebugserviceStateChanged);
-        // 特征改变（设备发送通知？）
-        connect(m_service_bledebug, &QLowEnergyService::characteristicChanged, this, &DeviceHandler::bledebugupdateInfoFromDev);
-
-        m_service_bledebug->discoverDetails();
-    }
-    else
-    {
-        setInfo("m_service_bledebug is null");
-    }
 }
 
 // Service functions
@@ -270,19 +231,19 @@ void DeviceHandler::serviceStateChanged(QLowEnergyService::ServiceState newState
 {
     switch (newState) {
     case QLowEnergyService::RemoteServiceDiscovering:
-        setInfo("ble : QLowEnergyService::RemoteServiceDiscovering");
+        setInfo("QLowEnergyService::RemoteServiceDiscovering");
         break;
     case QLowEnergyService::RemoteServiceDiscovered:
     {
         //discovery already done
-        setInfo("ble : QLowEnergyService::RemoteServiceDiscovered");
+        setInfo("QLowEnergyService::RemoteServiceDiscovered");
         searchCharacteristic();
     }
         break;
     case QLowEnergyService::RemoteService:
     {
         //未解问题： window需要再次扫描，才能进入QLowEnergyService::RemoteServiceDiscovered
-        setInfo("ble : QLowEnergyService::RemoteService");
+        setInfo("QLowEnergyService::RemoteService");
         QTimer::singleShot(0, this, &DeviceHandler::serviceScanDone);
     }
         break;
@@ -301,23 +262,16 @@ void DeviceHandler::updateInfoFromDev(const QLowEnergyCharacteristic &c, const Q
     // ignore any other characteristic change -> shouldn't really happen though
     if (c.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2b10}")))
     {
-        setInfo("recive :" + value.toHex());
-        if (value.toHex().at(2) == '0' && (value.toHex().at(3) == '1' || value.toHex().at(3) == '0')){
-        }
-        else{
-            blelinkwindow::receive(value.toHex());
-        }
-
-        if (value.toHex().at(0) == 'e' && value.toHex().at(1) == 'e' && value.toHex().at(5) == '0'){
-            showMessages("config wifi sucessful");
-        }
-        return;
+        emit bleMessageChange(value);
+//        if (value.toHex().at(0) == 'e' && value.toHex().at(1) == 'e' && value.toHex().at(5) == '0'){
+//            showMessages("config wifi sucessful");
+//        }
     }
 }
 
 void DeviceHandler::descriptorRead(const QLowEnergyDescriptor &d, const QByteArray &value)
 {
-    qDebug() << d.name() << value.toHex();;
+    qDebug() << "descriptorRead" << d.name() << value;
 }
 
 // 读特征 开启通知后 可以触发回调
@@ -326,7 +280,7 @@ void DeviceHandler::characteristicRead(const QLowEnergyCharacteristic &c, const 
     // ignore any other characteristic change -> shouldn't really happen though
     if (c.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2b10}")))
     {
-        qDebug() << "characteristicRead new data:" << value.toHex();
+        qDebug() << "characteristicRead new data:" << value;
     }
 }
 
@@ -336,7 +290,7 @@ void DeviceHandler::characteristicWrittenFun(const QLowEnergyCharacteristic &c, 
     // ignore any other characteristic change -> shouldn't really happen though
     if (c.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2b10}")))
     {
-        qDebug() << "characteristicRead new data:" << value.toHex();
+        qDebug() << "characteristicWrittenFun new data:" << value.toHex();
     }
 }
 
@@ -347,16 +301,9 @@ void DeviceHandler::characteristicWrite(const QLowEnergyCharacteristic character
     {
         //QByteArray array = text.toLocal8Bit();
         m_service->writeCharacteristic(character,value,QLowEnergyService::WriteWithoutResponse);
-        setInfo("send   :" + value.toHex());
         return;
     }
-    else if (character.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2c21}")))
-    {
-        m_service_bledebug->writeCharacteristic(character,value,QLowEnergyService::WriteWithoutResponse);
-        //setInfo("send   :" + value.toHex());
-        return;
-    }
-    setInfo("err :  get unright characteristicWrite uuid");
+    setError("get unright characteristicWrite uuid");
 }
 
 
@@ -364,6 +311,7 @@ void DeviceHandler::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, cons
 {
     if (d.isValid() && d == m_notificationDesc && value == QByteArray::fromHex("0000")) {
         //disabled notifications -> assume disconnect intent
+        qDebug() << "confirmedDescriptorWrite" << value;
         m_control->disconnectFromDevice();
         delete m_service;
         m_service = nullptr;
@@ -373,129 +321,17 @@ void DeviceHandler::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, cons
 void DeviceHandler::disconnectService()
 {
     //disable notifications
-    if (m_notificationDesc.isValid() && m_service && m_notificationDesc.value() == QByteArray::fromHex("1000")) {
+    if (m_notificationDesc.isValid() && m_service) {
         m_service->writeDescriptor(m_notificationDesc, QByteArray::fromHex("0000")); //读特征 关闭通知功能
         setInfo("disable m_notificationDesc");
-    }
-
-    //disable notifications
-    if (m_bledebugnotificationDesc.isValid() && m_service_bledebug && m_bledebugnotificationDesc.value() == QByteArray::fromHex("1000")) {
-        m_service_bledebug->writeDescriptor(m_bledebugnotificationDesc, QByteArray::fromHex("0000")); //读特征 关闭通知功能
-        setInfo("disable m_bledebugnotificationDesc");
     }
 }
 
 void DeviceHandler::continueConnectService()
 {
     //enable notifications
-    if (m_notificationDesc.isValid() && m_service && m_notificationDesc.value() == QByteArray::fromHex("0000")) {
+    if (m_notificationDesc.isValid() && m_service) {
         m_service->writeDescriptor(m_notificationDesc, QByteArray::fromHex("0100")); //读特征 关闭通知功能
         setInfo("enable m_notificationDesc");
     }
-
-    //enable notifications
-    if (m_bledebugnotificationDesc.isValid() && m_service_bledebug && m_bledebugnotificationDesc.value() == QByteArray::fromHex("0000")) {
-        m_service_bledebug->writeDescriptor(m_bledebugnotificationDesc, QByteArray::fromHex("0100")); //读特征 关闭通知功能
-        setInfo("enable m_bledebugnotificationDesc");
-    }
-}
-
-// 计算校验和
-void DeviceHandler::calculate(uint8_t *data)
-{
-    uint8_t temp = 0;
-    for(int i = 0; i < 19; i++)
-    {
-        temp = temp ^ data[i];
-    }
-    data[19] = temp;
-}
-
-void DeviceHandler::keepalive()
-{
-    QByteArray array;
-    uint8_t data[20] = {0xaa,0x01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    calculate(data);
-    array = QByteArray((char*)data,20);
-    characteristicWrite(setChar,array);
-}
-
-
-
-
-
-
-/*-----------------------------------------------------------------
- *
- *
- *
- *             以下是蓝牙无线打印相关函数
- *-----------------------------------------------------------------
-*/
-
-// Service functions
-//! [Find HRM characteristic]
-void DeviceHandler::bledebugserviceStateChanged(QLowEnergyService::ServiceState newState)
-{
-    switch (newState) {
-    case QLowEnergyService::RemoteServiceDiscovering:
-        setInfo("bledebug : QLowEnergyService::RemoteServiceDiscovering");
-        break;
-    case QLowEnergyService::RemoteServiceDiscovered:
-    {
-        //discovery already done
-        setInfo("bledebug : QLowEnergyService::RemoteServiceDiscovered");
-        const QList<QLowEnergyCharacteristic> chars = m_service_bledebug->characteristics();
-        for (const QLowEnergyCharacteristic &ch : chars) {
-            qDebug() << "found Characteristic uuid:" << ch.uuid();
-        }
-        // 订阅特性
-        bledebuggetChar = m_service_bledebug->characteristic(QBluetoothUuid("00010203-0405-0607-0809-0a0b0c0d2c20"));
-        bledebugsetChar = m_service_bledebug->characteristic(QBluetoothUuid("00010203-0405-0607-0809-0a0b0c0d2c21"));
-        if (!bledebugsetChar.isValid()) {
-            setError("bledebugsetChar not found.");
-            break;
-        }else if (!bledebuggetChar.isValid()) {
-            setError("bledebuggetChar not found.");
-            break;
-        }
-
-        //const QLowEnergyCharacteristic hrChar = m_service->characteristic(QBluetoothUuid::CharacteristicType::ServiceChanged); //character : 0x2a05
-        m_bledebugnotificationDesc = bledebuggetChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration); //Descriptor : 0x2902
-        //打开notification
-        m_service_bledebug->writeDescriptor(m_bledebugnotificationDesc, QByteArray::fromHex("0100"));//使能通知
-        m_service_bledebug->readDescriptor(m_bledebugnotificationDesc);
-        m_service_bledebug->readCharacteristic(bledebuggetChar);
-
-    }
-        break;
-    case QLowEnergyService::RemoteService:
-    {
-        //未解问题： 需要再次扫描，才能进入QLowEnergyService::RemoteServiceDiscovered
-        setInfo("bledebug : QLowEnergyService::RemoteService");
-        QTimer::singleShot(0, this, &DeviceHandler::serviceScanDone);
-    }
-        break;
-    default:
-        //nothing for now
-        break;
-    }
-}
-//! [Find HRM characteristic]
-
-//! [Reading value]
-void DeviceHandler::bledebugupdateInfoFromDev(const QLowEnergyCharacteristic &c, const QByteArray &value)
-{
-    // ignore any other characteristic change -> shouldn't really happen though
-    if (c.uuid() == QBluetoothUuid(QBluetoothUuid("{00010203-0405-0607-0809-0a0b0c0d2c20}")))
-    {
-        qDebug() << value;
-        bledebugwindow::debugtext_append(value);
-        return;
-    }
-}
-
-void DeviceHandler::bledebugdescriptorRead(const QLowEnergyDescriptor &d, const QByteArray &value)
-{
-    qDebug() << d.name() <<"descriptorRead have changed: " << value.toHex();;
 }

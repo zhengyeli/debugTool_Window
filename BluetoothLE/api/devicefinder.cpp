@@ -52,17 +52,19 @@
 #include "devicehandler.h"
 #include "deviceinfo.h"
 
-DeviceFinder::DeviceFinder(DeviceHandler *handler, QObject *parent):
-    BluetoothBaseClass(parent),
-    m_deviceHandler(handler)
+DeviceFinder::DeviceFinder(QObject *parent, DeviceHandler *handler, QTextEdit *infoTable):
+    BluetoothBaseClass(parent, infoTable)
 {
+    m_deviceHandler = handler;
     //! [devicediscovery-1]
     m_deviceDiscoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
-    m_deviceDiscoveryAgent->setLowEnergyDiscoveryTimeout(8000);
-
+#ifdef Q_OS_LINUX
+    m_deviceDiscoveryAgent->setLowEnergyDiscoveryTimeout(5000);
+#else
+    m_deviceDiscoveryAgent->setLowEnergyDiscoveryTimeout(0);
+#endif
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &DeviceFinder::addDevice);
-    connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this,
-           &DeviceFinder::scanError);
+    connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this, &DeviceFinder::scanError);
 
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &DeviceFinder::scanFinished);
     connect(m_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled, this, &DeviceFinder::scanFinished);
@@ -83,8 +85,15 @@ void DeviceFinder::startSearch()
     m_devices.clear();
 
     setInfo("Scanning for devices...");
+    qDebug() << m_deviceDiscoveryAgent;
     m_deviceDiscoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
     setInfo("Scanning start.");
+}
+
+void DeviceFinder::stopSearch()
+{
+    setInfo("Stop scan");
+    m_deviceDiscoveryAgent->stop();
 }
 
 //! [devicediscovery-3]
@@ -94,13 +103,12 @@ void DeviceFinder::addDevice(const QBluetoothDeviceInfo &device)
         if (sku.length() == 0)
         {
             m_devices.append(new DeviceInfo(device));
-            addBleDevToList(device.name());
         }
         else if (QString(device.name()).contains(sku, Qt::CaseInsensitive)) // 匹配不区分大小写
         {
             m_devices.append(new DeviceInfo(device));
-            addBleDevToList(device.name());
         }
+        emit scanDeviceResult(device);
         setInfo("found :  " + device.name());
     }
 }

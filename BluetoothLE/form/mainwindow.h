@@ -73,7 +73,7 @@ class MainWindow : public QMainWindow
 friend class DeviceFinder;
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr, QTextEdit *text_info = nullptr);
     ~MainWindow();
     QMenuBar* pMenuBar;
     QToolBar* toolbar;
@@ -89,26 +89,29 @@ public:
     tcpSocketClient *SocketClient;
     bleUartWindow *bleuart;
     bledebugwindow *bledebug;
-
+    int ble_data_length = 20;
     QTextEdit *text_info, *text_debug, *tetoutput = nullptr;
 
-private slots:
+    void calculate(uint8_t *data);
+
+public slots:
     void fileSave();
     void resetWindow();
+    void ble_rx_data_func(const QByteArray &d);
 
 public:
     Ui::MainWindow *ui;
     static MainWindow *mutualUi;
+    void ShowInfo(QString str);
     void SetInfo(QString str);
     void SetListView(QString str);
     void SetBleLogPrint(QString str);
     void readSettings();
     void saveSettings();
     void showMsg(QString str);
-    QByteArray calGetBleData(QByteArray);
+    void calGetBleData(QByteArray &, uint8_t *msg);
     void ble_send(QByteArray array); // BB AA
     void ble_char_send(uchar *array);//
-    void ble_debug_send(QByteArray array); //bb aa
 
     void creatNewDockWindow(QDockWidget *w, Qt::DockWidgetArea, bool mix);
     void closeAllWindow();
