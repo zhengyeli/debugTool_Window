@@ -14,6 +14,9 @@ public:
     void init();
     static void receive(QString);
 
+    void ble_get_base_info();
+
+
 public slots:
     void addBleDevToList(const QBluetoothDeviceInfo& info);
     void bleConnectSuccess();

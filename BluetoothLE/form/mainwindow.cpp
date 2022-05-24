@@ -9,7 +9,7 @@ void MainWindow::ble_rx_data_func(const QByteArray &d)
     uint8_t msg[20] = {0};
     QByteArray arraydata = d.toHex(); // "aa11"
     calGetBleData(arraydata, msg);
-    qDebug() << "arraydata" << arraydata << arraydata[2];
+    //qDebug() << "arraydata" << arraydata << arraydata[2];
 
     uint8_t head = msg[0];
     uint8_t type = msg[1];
@@ -19,13 +19,43 @@ void MainWindow::ble_rx_data_func(const QByteArray &d)
     {
         switch (type)
         {
-            case 0x06:
+        case 0x06:
+        {
+            QString str;
+            str = "wifi soft version : " + (QString)(char*)data;
+            ShowInfo(str);
+            break;
+        }
+        case 0x07:
+        {
+            uint8_t sub_type = 0;
+            switch (sub_type)
+            {
+            case 0x03:
             {
                 QString str;
-                str = "software version : " + (QString)(char*)data;
+                str = "wifi hard version : " + (QString)(char*)(data + 1);
                 ShowInfo(str);
+                break;
             }
-            break;
+            case 0x0a:
+            {
+                QString str;
+                str = "mcu soft version : " + (QString)(char*)(data + 1);
+                ShowInfo(str);
+                break;
+            }
+            case 0x0b:
+            {
+                QString str;
+                str = "mcu hard version : " + (QString)(char*)(data + 1);
+                ShowInfo(str);
+                break;
+            }
+            }
+        break;
+        }
+
         }
     }
     else if (head == 0x33)
@@ -203,7 +233,7 @@ void MainWindow::calGetBleData(QByteArray &array, uint8_t *msg)
                 msg[i/2] = parsedValue + (array[i] - ('a'-'9' - 1) - '0');
             parsedValue = 0;
         }
-        qDebug() << msg[i/2];
+        //qDebug() << msg[i/2];
     }
     calculate(msg);
     array = QByteArray((char*)msg,20);

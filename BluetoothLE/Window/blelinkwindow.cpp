@@ -3,7 +3,7 @@
 QListWidget *blelinkwindow::sku_list = nullptr;
 QLineEdit *blelinkwindow::cmd_receive = nullptr;
 QTimer *timer = nullptr;
-
+QTimer *first_cont_timer = nullptr;
 blelinkwindow::blelinkwindow(QWidget *parent)
     : QWidget{parent}
 {
@@ -41,10 +41,11 @@ void blelinkwindow::init()
         text_sku->setText("7160");
     else
         text_sku->setText(sku);
-        text_sku->setMaximumSize(200, 25);
+        //text_sku->setUpdatesEnabled(1);
+        //text_sku->setMinimumSize(200, 50);
     text_ble_send = new QLineEdit(dockWidgetContents);
         text_ble_send->setText("aa01");
-        text_ble_send->setMaximumSize(200, 25);
+        //text_ble_send->setMaximumSize(200, 25);
     button_scan_sku = new QPushButton(dockWidgetContents);
         button_scan_sku->setText("scan");
     button_ble_send = new QPushButton(dockWidgetContents);
@@ -54,15 +55,16 @@ void blelinkwindow::init()
     button_continue = new QPushButton(dockWidgetContents);
         button_continue->setText("继续");
     sku_list= new QListWidget(dockWidgetContents);
+    sku_list->setMaximumHeight(250);
     button_discon = new QPushButton(dockWidgetContents);
         button_discon->setText("断开");
     cmd_send = new QLineEdit(dockWidgetContents);
-        cmd_send->setMinimumHeight(30);
-        cmd_send->setMaximumHeight(30);
+        //cmd_send->setMinimumHeight(30);
+        //cmd_send->setMaximumHeight(30);
         cmd_send->setReadOnly(true);
     cmd_receive = new QLineEdit(dockWidgetContents);
-        cmd_receive->setMinimumHeight(30);
-        cmd_receive->setMaximumHeight(30);
+        //cmd_receive->setMinimumHeight(30);
+        //cmd_receive->setMaximumHeight(30);
         cmd_receive->setReadOnly(true);
     button_clear = new QPushButton(dockWidgetContents);
         button_clear->setText("clear");
@@ -73,8 +75,8 @@ void blelinkwindow::init()
     /* 左布局 */
     QVBoxLayout *left_verticalLayout;
     left_verticalLayout = new QVBoxLayout();
-    left_verticalLayout->setSpacing(20);  //间距
-    //left_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //left_verticalLayout->setSpacing(20);  //间距
+    left_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     //left_verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
     left_verticalLayout->addWidget(text_sku);
     left_verticalLayout->addWidget(text_ble_send);
@@ -82,24 +84,24 @@ void blelinkwindow::init()
     /* 右布局 */
     QVBoxLayout *right_verticalLayout;
     right_verticalLayout = new QVBoxLayout();
-    right_verticalLayout->setSpacing(20);  //间距
-    //right_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //right_verticalLayout->setSpacing(20);  //间距
+    right_verticalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     right_verticalLayout->addWidget(button_scan_sku);
     right_verticalLayout->addWidget(button_ble_send);
 
     /* 将两个垂直布局放入水平布局 */
     QHBoxLayout *horizontalLayout;
     horizontalLayout = new QHBoxLayout();
-    horizontalLayout->setSpacing(10);  //间距
-    //horizontalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //horizontalLayout->setSpacing(10);  //间距
+    horizontalLayout->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     horizontalLayout->addItem(left_verticalLayout);
     horizontalLayout->addItem(right_verticalLayout);
 
     /* 将剩余按钮放入水平布局 */
     QHBoxLayout *horizontalLayout1;
     horizontalLayout1 = new QHBoxLayout();
-    horizontalLayout1->setSpacing(10);  //间距
-    //horizontalLayout1->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
+    //horizontalLayout1->setSpacing(10);  //间距
+    horizontalLayout1->setContentsMargins(5, 5, 5, 5);  //setMargin可以设置左、上、右、下的外边距，设置之后，该函数可以主动设置
     horizontalLayout1->addWidget(button_discon);
     horizontalLayout1->addWidget(button_stop);
     horizontalLayout1->addWidget(button_continue);
@@ -202,6 +204,50 @@ void blelinkwindow::bleDevlist_itemClicked(QListWidgetItem* item)
     MainWindow::mutualUi->deviceFinder->connectToService(item->data(0).toString());
 }
 
+void blelinkwindow::ble_get_base_info()
+{
+    static uint8_t index = 0;
+    switch (index)
+    {
+    case 0:
+    {
+        //! wifi software version
+        QByteArray array("aa06");
+        MainWindow::mutualUi->ble_send(array);
+    }
+    break;
+    case 1:
+    {
+        //! wifi hardware version
+        QByteArray array("aa0703");
+        MainWindow::mutualUi->ble_send(array);
+    }
+    break;
+    case 3:
+    {
+        //! mcu hardware version
+        QByteArray array("aa070a");
+        MainWindow::mutualUi->ble_send(array);
+    }
+    break;
+    case 4:
+    {
+        //! mcu software version
+        QByteArray array("aa070b");
+        MainWindow::mutualUi->ble_send(array);
+    }
+    break;
+    default:
+    {
+        index = 0;
+        first_cont_timer->stop();
+        delete first_cont_timer;
+        return;
+    }
+    }
+    index++;
+}
+
 void blelinkwindow::bleConnectSuccess()
 {
     // 心跳定时器
@@ -214,9 +260,9 @@ void blelinkwindow::bleConnectSuccess()
     connect(timer, SIGNAL(timeout()), this, SLOT(keepalive()));
     timer->start(4000);
 
-    //! software version
-    QByteArray array("aa06");
-    MainWindow::mutualUi->ble_send(array);
+    first_cont_timer = new QTimer(this);
+    connect(first_cont_timer, SIGNAL(timeout()), this, SLOT(ble_get_base_info()));
+    first_cont_timer->start(100);
 
     MainWindow::mutualUi->showMsg("connect sucess");
 }
