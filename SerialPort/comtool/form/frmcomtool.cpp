@@ -4,8 +4,62 @@
 #include "comtool_quihelperdata.h"
 #include <QSerialPortInfo>
 
+#define rxBufSize  512
 using namespace comTool;
 bool isinputText = true;
+
+QString netMode[]{
+    "Tcp_client",
+    "Tcp_Server",
+    "Udp_Client",
+    "Udp_Server",
+};
+
+QString hotkey[]{
+    "govee",
+    "dev_info",
+    "ifconfig",
+    "reboot",
+    "log print 0",
+    "log print 1",
+    "log print 2",
+    "log print 3",
+    "log print 4",
+    "log enable mcu",
+    "log disable mcu",
+    "log enable ble",
+    "log disable ble",
+    "log enable scan",
+    "log disable scan",
+};
+
+void frmComTool::btnFunction()
+{
+    QObject *obj = sender();
+    QPushButton *button = (QPushButton *)obj;
+    if (com != nullptr)
+    {
+        QByteArray data = button->text().toLatin1();
+        data.append(0x0d);
+        com->write(data);
+    }
+
+    if (udpOk == true)
+    {
+        QByteArray data = button->text().toLatin1();
+        data.append(0x0d);
+        udpsocket->writeDatagram(data.data(), QHostAddress(AppConfig::ServerIP), AppConfig::ServerPort);
+        ui->txtMain->insertPlainText(data);
+    }
+
+    if (tcpOk == true)
+    {
+        QByteArray data = button->text().toLatin1();
+        data.append(0x0d);
+        tcpsocket->write(data.data());
+        ui->txtMain->insertPlainText(data);
+    }
+}
 
 frmComTool::frmComTool(QWidget *parent) : QWidget(parent), ui(new Ui::frmComTool)
 {
@@ -27,6 +81,21 @@ frmComTool::frmComTool(QWidget *parent) : QWidget(parent), ui(new Ui::frmComTool
     // 自己定义一个光标
     ui->txtMain->setFontWeight(QFont::Weight::Bold);
     ui->txtMain->insertPlainText("#");
+
+    // init hot key
+    int i = 0;
+    QWidget *w = new QWidget(ui->tabWidget);
+    ui->tabWidget->addTab(w, "hotkey");
+
+    //QGridLayout gridlayout = QGridLayout(ui->tab_3);
+    QVBoxLayout *verticalLayout = new QVBoxLayout(w);
+    for (i = 0; i < sizeof(hotkey)/sizeof(QString); i++) {
+        QPushButton *btn = new QPushButton(w);
+        btn->setText(hotkey[i]);
+        connect(btn, &QPushButton::clicked, this, &frmComTool::btnFunction);
+        verticalLayout->addWidget(btn);
+    }
+    w->setLayout(verticalLayout);
 }
 
 frmComTool::~frmComTool()
@@ -64,14 +133,26 @@ void frmComTool::initForm()
     ui->tabWidget->setCurrentIndex(0);
     changeEnable(false);
 
+    //TCP
     tcpOk = false;
-    socket = new QTcpSocket(this);
-    socket->abort();
-    connect(socket, SIGNAL(readyRead()), this, SLOT(readDataNet()));
+    tcpsocket = new QTcpSocket(this);
+    tcpsocket->abort();
+    connect(tcpsocket, SIGNAL(readyRead()), this, SLOT(readDataNet()));
 #if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
-    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(readErrorNet()));
+    connect(tcpsocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(readErrorNet()));
 #else
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(readErrorNet()));
+    connect(tcpsocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(readErrorNet()));
+#endif
+
+    //UDP
+    udpOk = false;
+    udpsocket = new QUdpSocket(this);
+    udpsocket->abort();
+    connect(udpsocket, SIGNAL(readyRead()), this, SLOT(readUdpDataNet()));
+#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+    connect(tcpsocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(readErrorNet()));
+#else
+    connect(udpsocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(readErrorNet()));
 #endif
 
     timerConnect = new QTimer(this);
@@ -89,14 +170,24 @@ void frmComTool::initForm()
 
 void frmComTool::initConfig()
 {
+#if 0
     QStringList comList ;
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
         comList << info.portName();
     }
+
     if (infos.isEmpty()){
         ui->btnOpen->setText("扫描");
     }
+#else
+    QStringList comList ;
+    char str[16] = {0};
+    for (int i = 0; i < 40; i++) {
+        sprintf(str, "COM%d", i);
+        comList << str;
+    }
+#endif
 
     ui->cboxPortName->addItems(comList);
     ui->cboxPortName->setCurrentIndex(ui->cboxPortName->findText(AppConfig::PortName));
@@ -215,6 +306,10 @@ void frmComTool::initConfig()
     connect(ui->ckAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(saveConfig()));
 }
 
+void frmComTool::txtMainInsertText(const QString &text)
+{
+
+}
 
 bool frmComTool::eventFilter(QObject *obj, QEvent *event)
 {
@@ -236,6 +331,20 @@ bool frmComTool::eventFilter(QObject *obj, QEvent *event)
             {
                 com->write(keyEvent->text().toLocal8Bit());
             }
+
+            if (udpOk == true)
+            {
+                QByteArray data = keyEvent->text().toLocal8Bit();
+                udpsocket->writeDatagram(data.data(), QHostAddress(AppConfig::ServerIP), AppConfig::ServerPort);
+                ui->txtMain->insertPlainText(data);
+            }
+
+            if (tcpOk == true)
+            {
+                QByteArray data = keyEvent->text().toLocal8Bit();
+                tcpsocket->write(data.data());
+                ui->txtMain->insertPlainText(data);
+            }
 #if 1
             if (keyEvent->key() == 32) //空格
             {
@@ -245,6 +354,10 @@ bool frmComTool::eventFilter(QObject *obj, QEvent *event)
                 cursor.movePosition(QTextCursor::PreviousCharacter);
                 ui->txtMain->setTextCursor(cursor);
                 ui->txtMain->insertPlainText(" ");
+            }
+            else if (keyEvent->key() == 0x0d) // enter
+            {
+                ui->txtMain->insertPlainText("\n");
             }
 #endif
             return true;
@@ -335,36 +448,39 @@ void frmComTool::append(int type, const QString &data, bool clear)
 #ifdef Q_OS_LINUX
     //strData = strData.replace("\r", "");
 #endif
-    strData = strData.replace("\n", "<br />");
+
+    strData = strData.replace("\n\r", "");
 
     //不同类型不同颜色显示
     QString strType;
     if (type == 0) {
-        strType = "串口发送 >>";
+        strType = "串口发送 ";
         ui->txtMain->setTextColor(QColor("dodgerblue"));
     } else if (type == 1) {
-        strType = "串口接收 <<";
+        strType = "串口接收 ";
         ui->txtMain->setTextColor(QColor("red"));
+        strData = strData.replace("\n", "<br />"); // html's \r
     } else if (type == 2) {
-        strType = "处理延时 >>";
+        strType = "处理延时 ";
         ui->txtMain->setTextColor(QColor("gray"));
     } else if (type == 3) {
-        strType = "正在校验 >>";
+        strType = "正在校验 ";
         ui->txtMain->setTextColor(QColor("green"));
     } else if (type == 4) {
-        strType = "网络发送 >>";
+        strType = "网络发送 ";
         ui->txtMain->setTextColor(QColor(24, 189, 155));
     } else if (type == 5) {
-        strType = "网络接收 <<";
+        strType = "网络接收 ";
         ui->txtMain->setTextColor(QColor(255, 107, 107));
+        strData = strData.replace("\r", "");
     } else if (type == 6) {
-        strType = "提示信息 >>";
+        strType = "提示信息 ";
         ui->txtMain->setTextColor(QColor(100, 184, 255));
     }
 
     if (type != 1)
-    strData = QString("时间[%1] %2 \r\n%3").arg(TIMEMS).arg(strType).arg(strData);
-
+    strData = QString("时间[%1] [%2] %3\r\n").arg(TIMEMS).arg(strType).arg(strData);
+    qDebug() << "strData :" << strData;
     // 进度条在尾部，实时显示打印
     if (ui->txtMain->verticalScrollBar()->value() == ui->txtMain->verticalScrollBar()->maximum()){
         isinputText = true;
@@ -377,14 +493,27 @@ void frmComTool::append(int type, const QString &data, bool clear)
     cursor.deletePreviousChar();
     ui->txtMain->setTextCursor(cursor);
 
-    // 文本替换
-    strData.replace("ERR","<font color=red>ERR</font>",Qt::CaseSensitive);
-    strData.replace("WARN","<font color=yellow>WARN</font>",Qt::CaseSensitive);
-    strData.replace("INF","<font color=yellow>INF</font>",Qt::CaseSensitive);
-    strData.replace("success","<font color=green>success</font>",Qt::CaseSensitive);
+    switch (type) {
+    case 0:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+        ui->txtMain->insertPlainText(strData);
+        break;
+    case 1:
+        // 文本替换
+        strData.replace("ERR","<font color=red>ERR</font>",Qt::CaseSensitive);
+        strData.replace("WARN","<font color=yellow>WARN</font>",Qt::CaseSensitive);
+        strData.replace("INF","<font color=yellow>INF</font>",Qt::CaseSensitive);
+        strData.replace("success","<font color=green>success</font>",Qt::CaseSensitive);
 
-    // insertHtml 支持html格式颜色文字
-    ui->txtMain->insertHtml(strData);
+        // insertHtml 支持html格式颜色文字
+        ui->txtMain->insertHtml(strData);
+        break;
+    }
+
     ui->txtMain->insertPlainText("#");
 
     if (isinputText){
@@ -455,7 +584,7 @@ void frmComTool::readData()
 
         //启用网络转发则调用网络发送数据
         if (tcpOk) {
-            socket->write(data);
+            tcpsocket->write(data);
             append(4, QString(buffer));
         }
     }
@@ -632,25 +761,84 @@ void frmComTool::on_btnClear_clicked()
 
 void frmComTool::on_btnStart_clicked()
 {
+    int i;
+    QString mode = ui->cboxMode->currentText();
+    for (i = 0; i < sizeof(netMode)/sizeof(QString); i++) {
+        if (netMode[i] == mode){
+            break;
+        }
+    }
     if (ui->btnStart->text() == "启动") {
         if (AppConfig::ServerIP == "" || AppConfig::ServerPort == 0) {
             append(6, "IP地址和远程端口不能为空");
             return;
         }
 
-        socket->connectToHost(AppConfig::ServerIP, AppConfig::ServerPort);
-        if (socket->waitForConnected(100)) {
+        switch (i)
+        {
+        case 0: // tcp client
+            tcpsocket->connectToHost(AppConfig::ServerIP, AppConfig::ServerPort);
+            if (tcpsocket->waitForConnected(100)) {
+                ui->btnStart->setText("停止");
+                append(6, "连接tcp服务器成功");
+                tcpOk = true;
+            }else{
+                append(6, "连接tcp服务器fail");
+            }
+            break;
+        case 1: // tcp server
+            tcpsocket->bind(QHostAddress::LocalHost, AppConfig::ServerPort, QTcpSocket::BindFlag::DefaultForPlatform);
             ui->btnStart->setText("停止");
-            append(6, "连接服务器成功");
-            tcpOk = true;
+            append(6, "bind成功");
+            break;
+        case 2: // udp client
+        {
+            QByteArray data = "govee";
+            if (udpsocket->writeDatagram(data.data(), QHostAddress(AppConfig::ServerIP), AppConfig::ServerPort) > 0){
+                append(6, "连接udp服务器成功");
+                udpOk = true;
+            }
+            else{
+                append(6, "连接udp服务器fail");
+            }
+        }
+            break;
+        case 3: // udp server
+            if (udpsocket->bind(QHostAddress::LocalHost, AppConfig::ServerPort,  QUdpSocket::BindFlag::DefaultForPlatform))
+            {
+                ui->btnStart->setText("停止");
+                append(6, "bind udp 成功");
+                udpOk = true;
+
+            }else{
+                append(6, "bind udp服务器fail");
+            }
+            break;
         }
     } else {
-        socket->disconnectFromHost();
-        if (socket->state() == QAbstractSocket::UnconnectedState || socket->waitForDisconnected(100)) {
-            ui->btnStart->setText("启动");
+
+
+        switch (i)
+        {
+        case 0: // tcp client
+            tcpsocket->disconnectFromHost();
+            if (tcpsocket->state() == QAbstractSocket::UnconnectedState || tcpsocket->waitForDisconnected(100)) {
+                ui->btnStart->setText("启动");
+                append(6, "断开服务器成功");
+                tcpOk = false;
+            }
+            break;
+        case 1: // tcp server
+            tcpsocket->close();
             append(6, "断开服务器成功");
-            tcpOk = false;
+            break;
+        case 2: // udp client
+        case 3: // udp server
+            udpsocket->close();
+            append(6, "断开成功");
+            break;
         }
+        ui->btnStart->setText("启动");
     }
 }
 
@@ -680,8 +868,8 @@ void frmComTool::connectNet()
 {
     if (!tcpOk && AppConfig::AutoConnect && ui->btnStart->text() == "启动") {
         if (AppConfig::ServerIP != "" && AppConfig::ServerPort != 0) {
-            socket->connectToHost(AppConfig::ServerIP, AppConfig::ServerPort);
-            if (socket->waitForConnected(100)) {
+            tcpsocket->connectToHost(AppConfig::ServerIP, AppConfig::ServerPort);
+            if (tcpsocket->waitForConnected(100)) {
                 ui->btnStart->setText("停止");
                 append(6, "连接服务器成功");
                 tcpOk = true;
@@ -692,9 +880,9 @@ void frmComTool::connectNet()
 
 void frmComTool::readDataNet()
 {
-    if (socket->bytesAvailable() > 0) {
+    if (tcpsocket->bytesAvailable() > 0) {
         QUIHelper::sleep(AppConfig::SleepTime);
-        QByteArray data = socket->readAll();
+        QByteArray data = tcpsocket->readAll();
 
         QString buffer;
         if (ui->ckHexReceive->isChecked()) {
@@ -706,17 +894,119 @@ void frmComTool::readDataNet()
         append(5, buffer);
 
         //将收到的网络数据转发给串口
-        if (comOk) {
-            com->write(data);
-            append(0, buffer);
-        }
+//        if (comOk) {
+//            com->write(data);
+//            append(0, buffer);
+//        }
+    }
+}
+
+void frmComTool::readUdpDataNet()
+{
+    char data[rxBufSize] = {'\0'};
+    if (udpsocket->bytesAvailable() > 0) {
+        //QUIHelper::sleep(AppConfig::SleepTime);
+        udpsocket->readDatagram(data, rxBufSize);
+//        QString buffer;
+//        if (ui->ckHexReceive->isChecked()) {
+//            buffer = QUIHelperData::byteArrayToHexStr(data);
+//        } else {
+//            buffer = QUIHelperData::byteArrayToAsciiStr(data);
+//        }
+//        qDebug() << buffer;
+        append(5, data);
+
+        //将收到的网络数据转发给串口
+//        if (comOk) {
+//            com->write(data);
+//            append(0, buffer);
+//        }
+    }
+
+    foreach (QUdpSocket *sock, m_udpSocketlist) {
+       if (sock->bytesAvailable() > 0){
+           QHostAddress addr;
+           quint16 port;
+           sock->readDatagram(data, rxBufSize, &addr, &port);
+
+           QString buffer;
+           if (ui->ckHexReceive->isChecked()) {
+               buffer = QUIHelperData::byteArrayToHexStr(data);
+           } else {
+               buffer = QUIHelperData::byteArrayToAsciiStr(data);
+           }
+           if (strncmp(data, "Server", 6) == 0){
+               m_ipServerlist << addr.toString();
+               append(5,buffer);
+           }
+       }
     }
 }
 
 void frmComTool::readErrorNet()
 {
     ui->btnStart->setText("启动");
-    append(6, QString("连接服务器失败,%1").arg(socket->errorString()));
-    socket->disconnectFromHost();
+    append(6, QString("连接服务器失败,%1").arg(tcpsocket->errorString()));
+    tcpsocket->disconnectFromHost();
     tcpOk = false;
+
+    append(6, QString("连接服务器失败,%1").arg(udpsocket->errorString()));
+    udpsocket->disconnectFromHost();
+    udpOk = false;
 }
+
+void frmComTool::on_scan_clicked(bool b)
+{
+    if (b)
+        return;
+    int i;
+    QString mode = ui->cboxMode->currentText();
+    for (i = 0; i < sizeof(netMode)/sizeof(QString); i++) {
+        if (netMode[i] == mode){
+            break;
+        }
+    }
+    switch (i)
+    {
+    case 2: {// udp client
+        QByteArray data = "where are you?";
+        if (m_udpSocketlist.isEmpty()){
+            QList<QNetworkInterface> networkinterfaces = QNetworkInterface::allInterfaces();
+            foreach (QNetworkInterface interfaces, networkinterfaces)
+            {
+                foreach (QNetworkAddressEntry entry, interfaces.addressEntries())
+                {
+                    QHostAddress broadcastAddress = entry.broadcast();
+                    if (broadcastAddress != QHostAddress::Null
+                            && entry.ip() != QHostAddress::LocalHost
+                            && entry.ip().protocol() == QAbstractSocket::IPv4Protocol
+                            )
+                    {
+
+                        QUdpSocket * sock = new QUdpSocket();
+                        if(sock->bind(entry.ip(),AppConfig::ServerPort))
+                        {
+                            qDebug() << "bind ok" << entry.ip();
+                        }
+                        connect(sock,SIGNAL(readyRead()),this,SLOT(readUdpDataNet()));
+                        sock->writeDatagram(data.data(), QHostAddress::Broadcast, AppConfig::ServerPort);
+                        m_udpSocketlist.append(sock);
+                    }
+                }
+            }
+        }
+        else{
+            foreach (QUdpSocket *sock, m_udpSocketlist) {
+               if (sock->state() == QAbstractSocket::SocketState::BoundState){
+                   sock->writeDatagram(data.data(), QHostAddress::Broadcast, AppConfig::ServerPort);
+               }
+            }
+        }
+        }
+        break;
+    default:
+        append(6, "only work at udp client mode");
+        break;
+    }
+}
+

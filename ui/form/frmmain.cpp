@@ -134,7 +134,7 @@ void frmMain::getQssColor(const QString &qss, QString &textColor, QString &panel
 void frmMain::initForm()
 {
     //设置无边框
-    QUIHelper::setFramelessForm(this);
+    //QUIHelper::setFramelessForm(this);
     //设置图标
     IconHelper::setIcon(ui->labIco, 0xf073, 30);
     IconHelper::setIcon(ui->btnMenu_Min, 0xf068);

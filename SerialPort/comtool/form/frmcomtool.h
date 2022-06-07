@@ -5,6 +5,8 @@
 #include "qtcpsocket.h"
 #include "qextserialport.h"
 #include <QTabWidget>
+#include <QUdpSocket>
+
 
 namespace Ui
 {
@@ -21,6 +23,7 @@ public:
     bool eventFilter(QObject *, QEvent *);//对目标对象调用installEventFilter()来注册监视对象(事件过滤器);
     int tabIndex;
     QTabWidget *Tab;
+    void txtMainInsertText(const QString &text);
 
 private:
     Ui::frmComTool *ui;
@@ -37,7 +40,11 @@ private:
     bool isShow;                //是否显示数据
 
     bool tcpOk;                 //网络是否正常
-    QTcpSocket *socket;         //网络连接对象
+    bool udpOk;                 //网络是否正常
+    QTcpSocket *tcpsocket;      //网络连接对象
+    QUdpSocket *udpsocket;      //网络连接对象
+    QList<QString> m_ipServerlist; //网络连接对象
+    QList<QUdpSocket *> m_udpSocketlist; //网络连接对象
     QTimer *timerConnect;       //定时器重连
 
 private slots:
@@ -55,7 +62,9 @@ private slots:
 private slots:
     void connectNet();
     void readDataNet();
+    void readUdpDataNet();
     void readErrorNet();
+    void btnFunction();
 
 private slots:
     void on_btnOpen_clicked();
@@ -67,6 +76,7 @@ private slots:
     void on_btnStart_clicked();
     void on_ckAutoSend_stateChanged(int arg1);
     void on_ckAutoSave_stateChanged(int arg1);
+    void on_scan_clicked(bool);
 };
 
 #endif // FRMCOMTOOL_H
