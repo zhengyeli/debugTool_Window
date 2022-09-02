@@ -761,13 +761,8 @@ void frmComTool::on_btnClear_clicked()
 
 void frmComTool::on_btnStart_clicked()
 {
-    int i;
-    QString mode = ui->cboxMode->currentText();
-    for (i = 0; i < sizeof(netMode)/sizeof(QString); i++) {
-        if (netMode[i] == mode){
-            break;
-        }
-    }
+    int i = ui->cboxMode->currentIndex();
+
     if (ui->btnStart->text() == "启动") {
         if (AppConfig::ServerIP == "" || AppConfig::ServerPort == 0) {
             append(6, "IP地址和远程端口不能为空");
@@ -778,7 +773,8 @@ void frmComTool::on_btnStart_clicked()
         {
         case 0: // tcp client
             tcpsocket->connectToHost(AppConfig::ServerIP, AppConfig::ServerPort);
-            if (tcpsocket->waitForConnected(100)) {
+            qDebug() << 123;
+            if (tcpsocket->waitForConnected(1000)) {
                 ui->btnStart->setText("停止");
                 append(6, "连接tcp服务器成功");
                 tcpOk = true;
@@ -796,6 +792,7 @@ void frmComTool::on_btnStart_clicked()
             QByteArray data = "govee";
             if (udpsocket->writeDatagram(data.data(), QHostAddress(AppConfig::ServerIP), AppConfig::ServerPort) > 0){
                 append(6, "连接udp服务器成功");
+                ui->btnStart->setText("停止");
                 udpOk = true;
             }
             else{
@@ -830,11 +827,17 @@ void frmComTool::on_btnStart_clicked()
             break;
         case 1: // tcp server
             tcpsocket->close();
+            ui->btnStart->setText("启动");
             append(6, "断开服务器成功");
             break;
         case 2: // udp client
+            udpOk = false;
+            ui->btnStart->setText("启动");
+            append(6, "断开udp服务器成功");
+            break;
         case 3: // udp server
             udpsocket->close();
+            ui->btnStart->setText("启动");
             append(6, "断开成功");
             break;
         }
@@ -903,6 +906,7 @@ void frmComTool::readDataNet()
 
 void frmComTool::readUdpDataNet()
 {
+    qDebug() << "dadada";
     char data[rxBufSize] = {'\0'};
     if (udpsocket->bytesAvailable() > 0) {
         //QUIHelper::sleep(AppConfig::SleepTime);
@@ -914,7 +918,10 @@ void frmComTool::readUdpDataNet()
 //            buffer = QUIHelperData::byteArrayToAsciiStr(data);
 //        }
 //        qDebug() << buffer;
-        append(5, data);
+        if (udpOk == true)
+        {
+            append(5, data);
+        }
 
         //将收到的网络数据转发给串口
 //        if (comOk) {

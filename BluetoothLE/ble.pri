@@ -10,6 +10,8 @@ INCLUDEPATH += $$PWD/api
 INCLUDEPATH += $$PWD/Window
 
 SOURCES += \
+    $$PWD/Window/blesensorwindow.cpp \
+    $$PWD/Window/bleskumsghandle.cpp \
     $$PWD/Window/src/myQPushButton.cpp \
 #   $$PWD/Window/bledebugwindow.cpp \
     $$PWD/Window/blelinkwindow.cpp \
@@ -17,6 +19,8 @@ SOURCES += \
     $$PWD/Window/tcpsocketclient.cpp \
 
 HEADERS += \
+    $$PWD/Window/blesensorwindow.h \
+    $$PWD/Window/bleskumsghandle.h \
     $$PWD/Window/src/myQPushButton.h \
 #   $$PWD/Window/bledebugwindow.h \
     $$PWD/Window/blelinkwindow.h \
@@ -25,3 +29,6 @@ HEADERS += \
 
 
 RESOURCES   += $$PWD/source/src.qrc
+
+FORMS += \
+    $$PWD/Window/blesensorwindow.ui

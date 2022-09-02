@@ -14,9 +14,6 @@ public:
     void init();
     static void receive(QString);
 
-    void ble_get_base_info();
-
-
 public slots:
     void addBleDevToList(const QBluetoothDeviceInfo& info);
     void bleConnectSuccess();
@@ -29,6 +26,7 @@ public slots:
     void clearButton_clicked();
     void closeWindow();
     void keepalive();
+    void ble_get_base_info();
 
 private:
     QPushButton * button_scan_sku,*button_ble_send ,*button_stop,*button_continue ,*button_discon, *button_clear;
@@ -41,6 +39,7 @@ private:
  public:
     QDockWidget *dockblelink;
     static QListWidget *sku_list;
+
 
 signals:
 

@@ -48,6 +48,8 @@
 #include "blelinkwindow.h"
 #include "bledebugwindow.h"
 #include "bleadvwindow.h"
+#include "blesensorwindow.h"
+#include "bleskumsghandle.h"
 
 #include "devicefinder.h"
 #include "devicehandler.h"
@@ -81,18 +83,19 @@ public:
     QToolButton *toolBtn = nullptr;
 
     QDockWidget *DockWidgetsocket, *DockWidgetBleUart, *DockWidgetblelink, *DockWigetbleDebug, *DockwidgetInfo, *DockwidgetWifiConfig;
+    QDockWidget *DockWidgetSensor;
     ConnectionHandler *connectionHandler;
     DeviceHandler *deviceHandler;
     DeviceFinder *deviceFinder;
 
     blelinkwindow *blelink;
+    bleskumsghandle *blesku;
     tcpSocketClient *SocketClient;
     bleUartWindow *bleuart;
     bledebugwindow *bledebug;
+    bleSensorWindow *bleSensor;
     int ble_data_length = 20;
     QTextEdit *text_info, *text_debug, *tetoutput = nullptr;
-
-    void calculate(uint8_t *data);
 
 public slots:
     void fileSave();
@@ -110,8 +113,10 @@ public:
     void saveSettings();
     void showMsg(QString str);
     void calGetBleData(QByteArray &, uint8_t *msg);
+    void calGetBleData(uint8_t *data);
     void ble_send(QByteArray array); // BB AA
     void ble_char_send(uchar *array);//
+    void ble_pt_send(QByteArray array);//
 
     void creatNewDockWindow(QDockWidget *w, Qt::DockWidgetArea, bool mix);
     void closeAllWindow();

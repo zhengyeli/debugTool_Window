@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+#include "mainwindow.h"
+#include "frmcomtool.h"
+
 class QAbstractButton;
 
 namespace Ui {

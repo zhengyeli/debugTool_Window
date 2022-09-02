@@ -6,63 +6,20 @@ MainWindow *MainWindow::mutualUi = nullptr;
 // 蓝牙数据回调
 void MainWindow::ble_rx_data_func(const QByteArray &d)
 {
-    uint8_t msg[20] = {0};
-    QByteArray arraydata = d.toHex(); // "aa11"
-    calGetBleData(arraydata, msg);
-    //qDebug() << "arraydata" << arraydata << arraydata[2];
+    QString name = connectionHandler->name();
 
-    uint8_t head = msg[0];
-    uint8_t type = msg[1];
-    uint8_t *data = (uint8_t*)msg + 2;
-
-    if (head == 0xaa)
+    if (name.contains("H1111", Qt::CaseInsensitive))
     {
-        switch (type)
-        {
-        case 0x06:
-        {
-            QString str;
-            str = "wifi soft version : " + (QString)(char*)data;
-            ShowInfo(str);
-            break;
-        }
-        case 0x07:
-        {
-            uint8_t sub_type = 0;
-            switch (sub_type)
-            {
-            case 0x03:
-            {
-                QString str;
-                str = "wifi hard version : " + (QString)(char*)(data + 1);
-                ShowInfo(str);
-                break;
-            }
-            case 0x0a:
-            {
-                QString str;
-                str = "mcu soft version : " + (QString)(char*)(data + 1);
-                ShowInfo(str);
-                break;
-            }
-            case 0x0b:
-            {
-                QString str;
-                str = "mcu hard version : " + (QString)(char*)(data + 1);
-                ShowInfo(str);
-                break;
-            }
-            }
-        break;
-        }
-
-        }
+        bleSensor->sensor_blemsg_handle(d);
     }
-    else if (head == 0x33)
+    else if (name.contains("H71", Qt::CaseInsensitive))
     {
-
+        blesku->govee_sku_blemsg_handle(d);
     }
-    SetInfo("recd :" + arraydata.toHex(' '));
+    else
+    {
+        blesku->govee_sku_blemsg_handle(d);
+    }
 }
 
 MainWindow::MainWindow(QWidget *parent, QTextEdit *textEdit)
@@ -128,9 +85,10 @@ MainWindow::MainWindow(QWidget *parent, QTextEdit *textEdit)
 
     //----------------------------------------- other window
     blelink      = new blelinkwindow(this);
+    blesku      = new bleskumsghandle();
     SocketClient = new tcpSocketClient(this);
     bleuart      = new bleUartWindow(this);
-    //bledebug     = new bledebugwindow(this);
+    bleSensor     = new bleSensorWindow(this);
 
     //-----------------------------------------  sencond : ble api init
     connectionHandler = new ConnectionHandler();
@@ -199,7 +157,7 @@ void MainWindow::SetInfo(QString str)
 }
 
 // 计算校验和
-void MainWindow::calculate(uint8_t *data)
+void MainWindow::calGetBleData(uint8_t *data)
 {
     uint8_t temp = 0;
     for(int i = 0; i < 19; i++)
@@ -235,7 +193,7 @@ void MainWindow::calGetBleData(QByteArray &array, uint8_t *msg)
         }
         //qDebug() << msg[i/2];
     }
-    calculate(msg);
+    calGetBleData(msg);
     array = QByteArray((char*)msg,20);
 }
 
@@ -254,7 +212,7 @@ void MainWindow::ble_send(QByteArray array)
 
 void MainWindow::ble_char_send(uchar *array)
 {
-    calculate(array);
+    calGetBleData(array);
     QByteArray Array = QByteArray((char*)array,20);
     if (deviceHandler->setChar.isValid())
     {
@@ -264,6 +222,19 @@ void MainWindow::ble_char_send(uchar *array)
     {
         qDebug() << Array.toHex();
         SetInfo("warning : deviceHandler.setChar is null");
+    }
+}
+
+void MainWindow::ble_pt_send(QByteArray array)
+{
+    if (deviceHandler->setChar.isValid())
+    {
+        SetInfo(array);
+        deviceHandler->characteristicWrite(deviceHandler->setChar,array);
+    }
+    else
+    {
+        SetInfo("warning ble_pt_send setChar is null");
     }
 }
 

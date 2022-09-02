@@ -2,6 +2,8 @@
 #include "appinit.h"
 #include "quihelper.h"
 
+#define ble_only 0
+
 int main(int argc, char *argv[])
 {
     //设置不应用操作系统设置比如字体
@@ -15,12 +17,17 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     AppInit::Instance()->start();
 
+#if ble_only
+    MainWindow w;
+    w.show();
+#else
     QUIHelper::setFont();
     QUIHelper::setCode();
 
     frmMain w;
     QUIHelper::setFormInCenter(&w);
     w.show();
+#endif
 
     return a.exec();
 }

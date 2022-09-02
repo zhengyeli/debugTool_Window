@@ -5,9 +5,6 @@
 #include "iconhelper.h"
 #include "quihelper.h"
 
-#include "mainwindow.h"
-#include "frmcomtool.h"
-
 QList<QString> tbtnConfigNameArray = {"保存窗口设置","恢复窗口设置", "恢复默认设置", "调试信息另存"};
 frmMain *p = nullptr;
 
@@ -23,13 +20,12 @@ frmMain::frmMain(QWidget *parent) : QWidget(parent), ui(new Ui::frmMain)
     ui->stackedWidget_2->addWidget(w);
 
     comToolWidget_init();
-
+    // 蓝牙调试窗口
+    initRightToolBar();
     this->initForm();
     this->initStyle();
     this->initLeftMain();
     this->initLeftConfig();
-    // 蓝牙调试窗口
-    initRightToolBar();
 }
 
 frmMain::~frmMain()
@@ -178,7 +174,7 @@ void frmMain::initStyle()
 {
     //加载样式表
     QString qss;
-    QFile file(":/qss/blacksoft.css");
+    QFile file(":/darkOrange.qss");
     if (file.open(QFile::ReadOnly)) {
         qss = QLatin1String(file.readAll());
         QString paletteColor = qss.mid(20, 7);

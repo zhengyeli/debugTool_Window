@@ -167,15 +167,29 @@ void blelinkwindow::scanButton_clicked()
 
 void blelinkwindow::sendButton_clicked()
 {
-// QByteArray实际存的是一个个字符，例如
     QString data = text_ble_send->text();
+
+    if (data.length() % 2 != 0){
+        cmd_send->setText("input err data!!!");
+        return;
+    }
+//    QByteArray实际存的是一个个字符，例如
 //    QByteArray array1 = data.toUtf8();                           //"3132"
 //    qDebug() << array1[0] << array1[1];                          // output : 3 1
 //    QByteArray array = QByteArray::fromHex(data.toLatin1());     //"\x31\x32"
 //    qDebug() << array[0] << array[1];                            // output : 1 2
+
     QByteArray array = data.toUtf8();
-//    /QByteArray array = QByteArray::fromHex(data.toLatin1());
     cmd_send->setText(data.toUtf8());
+    if (array.at(0) == '6' && array.at(1) == '6')
+    {
+        MainWindow::mutualUi->blesku->govee_ble_test_stop_check(array);
+        // close heartbeat timer
+        if (timer)
+        timer->stop();
+
+        return;
+    }
     MainWindow::mutualUi->ble_send(array);
 }
 
@@ -184,6 +198,7 @@ void blelinkwindow::disconButton_clicked()
     if (timer){
         timer->stop();
     }
+    MainWindow::mutualUi->blesku->ble_test_stop();
     MainWindow::mutualUi->deviceHandler->disconnectDevice();
     MainWindow::mutualUi->SetInfo("disconnected");
 }
@@ -223,20 +238,67 @@ void blelinkwindow::ble_get_base_info()
         MainWindow::mutualUi->ble_send(array);
     }
     break;
-    case 3:
+    case 2:
     {
         //! mcu hardware version
         QByteArray array("aa070a");
         MainWindow::mutualUi->ble_send(array);
     }
     break;
-    case 4:
+    case 3:
     {
         //! mcu software version
         QByteArray array("aa070b");
         MainWindow::mutualUi->ble_send(array);
     }
     break;
+#if 1
+    case 4:
+    {
+        QByteArray data;
+        data.append(0x33);
+        data.append(0xCC);
+        data.append("getRange");
+        MainWindow::mutualUi->ble_pt_send(data);
+    }
+    break;
+    case 5:
+    {
+        QByteArray data;
+        data.append(0x33);
+        data.append(0xCC);
+        data.append("getSensitivity");
+        MainWindow::mutualUi->ble_pt_send(data);
+    }
+    break;
+    case 6:
+    {
+        QByteArray data;
+        data.append(0x33);
+        data.append(0xCC);
+        data.append("getLatency");
+        MainWindow::mutualUi->ble_pt_send(data);
+    }
+    break;
+    case 7:
+    {
+        QByteArray data;
+        data.append(0x33);
+        data.append(0xCC);
+        data.append("getInhibit");
+        MainWindow::mutualUi->ble_pt_send(data);
+    }
+    break;
+    case 8:
+    {
+        QByteArray data;
+        data.append(0x33);
+        data.append(0xCC);
+        data.append("getUartOutput");
+        // MainWindow::mutualUi->ble_pt_send(data);
+    }
+    break;
+#endif
     default:
     {
         index = 0;

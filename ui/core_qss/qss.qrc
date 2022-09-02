@@ -24,5 +24,7 @@
         <file>qss/blacksoft/radiobutton_checked_disable.png</file>
         <file>qss/blacksoft/radiobutton_unchecked.png</file>
         <file>qss/blacksoft/radiobutton_unchecked_disable.png</file>
+        <file>Clientor.qss</file>
+        <file>darkOrange.qss</file>
     </qresource>
 </RCC>
