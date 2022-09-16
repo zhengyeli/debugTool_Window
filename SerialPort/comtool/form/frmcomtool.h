@@ -77,6 +77,7 @@ private slots:
     void on_ckAutoSend_stateChanged(int arg1);
     void on_ckAutoSave_stateChanged(int arg1);
     void on_scan_clicked(bool);
+    void on_btnScan_clicked(bool);
 };
 
 #endif // FRMCOMTOOL_H

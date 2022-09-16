@@ -117,7 +117,7 @@ void frmComTool::initForm()
 
     //读取数据
     timerRead = new QTimer(this);
-    timerRead->setInterval(100);
+    timerRead->setInterval(3);
     connect(timerRead, SIGNAL(timeout()), this, SLOT(readData()));
 
     //发送数据
@@ -170,24 +170,11 @@ void frmComTool::initForm()
 
 void frmComTool::initConfig()
 {
-#if 0
     QStringList comList ;
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
         comList << info.portName();
     }
-
-    if (infos.isEmpty()){
-        ui->btnOpen->setText("扫描");
-    }
-#else
-    QStringList comList ;
-    char str[16] = {0};
-    for (int i = 0; i < 40; i++) {
-        sprintf(str, "COM%d", i);
-        comList << str;
-    }
-#endif
 
     ui->cboxPortName->addItems(comList);
     ui->cboxPortName->setCurrentIndex(ui->cboxPortName->findText(AppConfig::PortName));
@@ -433,6 +420,7 @@ void frmComTool::append(int type, const QString &data, bool clear)
     }
 
     if (currentCount >= maxCount) {
+        saveData();
         ui->txtMain->clear();
         currentCount = 0;
     }
@@ -445,42 +433,43 @@ void frmComTool::append(int type, const QString &data, bool clear)
     QString strData = data;
     //strData = strData.trimmed();
     //strData = strData.simplified();
-#ifdef Q_OS_LINUX
-    //strData = strData.replace("\r", "");
-#endif
 
-    strData = strData.replace("\n\r", "");
+#ifdef Q_OS_WIN
+    // QT的/r /n都会换行，所以只保留/n
+    strData = strData.replace('\r', "");
+#else
+    //
+#endif
 
     //不同类型不同颜色显示
     QString strType;
     if (type == 0) {
         strType = "串口发送 ";
-        ui->txtMain->setTextColor(QColor("dodgerblue"));
+        //ui->txtMain->setTextColor(QColor("dodgerblue"));
     } else if (type == 1) {
         strType = "串口接收 ";
-        ui->txtMain->setTextColor(QColor("red"));
+        //ui->txtMain->setTextColor(QColor("red"));
         strData = strData.replace("\n", "<br />"); // html's \r
     } else if (type == 2) {
         strType = "处理延时 ";
-        ui->txtMain->setTextColor(QColor("gray"));
+        //ui->txtMain->setTextColor(QColor("gray"));
     } else if (type == 3) {
         strType = "正在校验 ";
-        ui->txtMain->setTextColor(QColor("green"));
+        //ui->txtMain->setTextColor(QColor("green"));
     } else if (type == 4) {
         strType = "网络发送 ";
-        ui->txtMain->setTextColor(QColor(24, 189, 155));
+        //ui->txtMain->setTextColor(QColor(24, 189, 155));
     } else if (type == 5) {
         strType = "网络接收 ";
-        ui->txtMain->setTextColor(QColor(255, 107, 107));
-        strData = strData.replace("\r", "");
+        //ui->txtMain->setTextColor(QColor(255, 107, 107));
+        // strData = strData.replace("\r", "");
     } else if (type == 6) {
         strType = "提示信息 ";
         ui->txtMain->setTextColor(QColor(100, 184, 255));
     }
 
-    if (type != 1)
-    strData = QString("时间[%1] [%2] %3\r\n").arg(TIMEMS).arg(strType).arg(strData);
-    qDebug() << "strData :" << strData;
+    strData = QString("时间[%1] [%2]<br /> %3<br />").arg(TIMEMS).arg(strType).arg(strData);
+
     // 进度条在尾部，实时显示打印
     if (ui->txtMain->verticalScrollBar()->value() == ui->txtMain->verticalScrollBar()->maximum()){
         isinputText = true;
@@ -640,7 +629,7 @@ void frmComTool::saveData()
 
     QDateTime now = QDateTime::currentDateTime();
     QString name = now.toString("yyyy-MM-dd-HH-mm-ss");
-    QString fileName = QString("%1/%2.txt").arg(QUIHelper::appPath()).arg(name);
+    QString fileName = QString("%1/%2 %3.txt").arg(QUIHelper::appPath()).arg(ui->cboxPortName->currentText()).arg(name);
 
     QFile file(fileName);
     file.open(QFile::WriteOnly | QIODevice::Text);
@@ -648,7 +637,7 @@ void frmComTool::saveData()
     out << tempData;
     file.close();
 
-    on_btnClear_clicked();
+    // on_btnClear_clicked();
 }
 
 void frmComTool::on_btnOpen_clicked()
@@ -725,8 +714,10 @@ void frmComTool::on_btnStopShow_clicked()
 
 void frmComTool::on_btnData_clicked()
 {
-    QString fileName = QString("%1/%2").arg(QUIHelper::appPath()).arg("send.txt");
-    QFile file(fileName);
+    QWidget *qwidget = new QWidget();
+    QString dir = QFileDialog::getOpenFileName(qwidget, "select file", QUIHelper::appPath(), nullptr);
+    //QString fileName = QString("%1/%2").arg(QUIHelper::appPath()).arg("send.txt");
+    QFile file(dir);
     if (!file.exists()) {
         return;
     }
@@ -783,7 +774,7 @@ void frmComTool::on_btnStart_clicked()
             }
             break;
         case 1: // tcp server
-            tcpsocket->bind(QHostAddress::LocalHost, AppConfig::ServerPort, QTcpSocket::BindFlag::DefaultForPlatform);
+            tcpsocket->bind(QHostAddress::Any, AppConfig::ServerPort, QTcpSocket::BindFlag::DefaultForPlatform);
             ui->btnStart->setText("停止");
             append(6, "bind成功");
             break;
@@ -1015,5 +1006,20 @@ void frmComTool::on_scan_clicked(bool b)
         append(6, "only work at udp client mode");
         break;
     }
+}
+
+void frmComTool::on_btnScan_clicked(bool)
+{
+    QStringList comList ;
+    const auto infos = QSerialPortInfo::availablePorts();
+    for (const QSerialPortInfo &info : infos) {
+        comList << info.portName();
+    }
+    int maxIndex = ui->cboxPortName->count();
+    for (char i = 0; 0 < maxIndex; maxIndex--)
+    {
+        ui->cboxPortName->removeItem(i);
+    }
+    ui->cboxPortName->addItems(comList);
 }
 

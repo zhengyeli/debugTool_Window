@@ -638,7 +638,7 @@ border-radius:0px;
 }
 
 QLineEdit,QTextEdit,QPlainTextEdit,QSpinBox,QDoubleSpinBox,QComboBox,QDateEdit,QTimeEdit,QDateTimeEdit{
-background:#444444;
+background:#000000;
 }
 
 QTabWidget::pane:top{top:-1px;}
